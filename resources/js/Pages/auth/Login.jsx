@@ -13,7 +13,7 @@ export default function Login() {
         >
             {/* Contenedor principal */}
             <div className="flex-9 flex flex-col items-baseline justify-center">
-                <div className="">
+                <div className="mt-10">
                     {/* Logo superior */}
                     <div className="mb-10 flex items-center justify-center">
                         <div className="w-32 h-32 rounded-full border-2 border-white flex items-center justify-center">
@@ -76,11 +76,11 @@ export default function Login() {
             </div>
             {/* Footer */}
             <div className="flex-1 flex items-center">
-                <footer className="flex flex-col mt-16 items-center text-center">
+                <footer className="flex flex-col items-center text-center">
                     <img
                         src="/images/logos/brief.png"
                         alt="BriefData"
-                        className="w-24 mb-3"
+                        className="w-52 mb-3"
                     />
                     <p className="text-white text-xs opacity-80">
                         © Copyright 2024. MATEC® Matemáticas y Tecnología
