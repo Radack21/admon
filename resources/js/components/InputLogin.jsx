@@ -1,24 +1,22 @@
-import { User } from "lucide-react";
-
-export default function UserInput({
+export default function InputIcon({
     label = "Usuario",
     value,
     onChange,
     placeholder = "Usuario",
     className = "",
+    icon,
 }) {
     return (
         <div className={`relative w-full ${className}`}>
             {/* Input */}
-            <div className="relative flex items-center rounded-full border border-white/30 bg-black/80 px-4 py-3 ">
-                <User className="mr-3 h-5 w-5 text-white/70" />
-
+            <div className="relative flex items-center rounded-full border border-white bg-black/80 px-4 py-3 ">
+                <div className="border-r-2 border-white pr-2">{icon}</div>
                 <input
                     type="text"
                     value={value}
                     onChange={onChange}
                     placeholder={placeholder}
-                    className="w-full bg-transparent text-white placeholder-white/60 outline-none"
+                    className="w-full bg-transparent text-white placeholder-white outline-none pl-2"
                 />
             </div>
         </div>

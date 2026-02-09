@@ -1,45 +1,92 @@
 import { useState } from "react";
-import UserInput from "../../components/InputLogin";
+import InputIcon from "../../components/InputLogin";
+import { User, Lock } from "lucide-react";
 
 export default function Login() {
     const [user, setUser] = useState("");
+    const [password, setPassword] = useState("");
 
     return (
         <div
-            className="min-h-screen flex items-center justify-center bg-cover bg-center"
-            style={{ backgroundImage: "url('/images/backgrounds/login.jpg')" }}
+            className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
+            style={{ backgroundImage: "url('/images/backgrounds/login3.jpg')" }}
         >
-            <div className="w-full max-w-3xl p-8 rounded-lg shadow-md flex flex-col items-center">
-                {/* Icono */}
-                <div className="w-[170px] mb-6 rounded-full border-white border-2 h-[170px]">
-                    <img
-                        src="images/logos/logo.png"
-                        alt="Logo"
-                        className="w-full h-full object-cover rounded-full p-2"
-                    />
+            {/* Contenedor principal */}
+            <div className="flex-9 flex flex-col items-baseline justify-center">
+                <div className="">
+                    {/* Logo superior */}
+                    <div className="mb-10 flex items-center justify-center">
+                        <div className="w-32 h-32 rounded-full border-2 border-white flex items-center justify-center">
+                            <img
+                                src="/images/logos/logo.png"
+                                alt="Logo"
+                                className="w-28 h-28 object-cover rounded-full"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Formulario */}
+                    <form className="w-full max-w-3xl">
+                        {/* Inputs en fila */}
+                        <div className="flex flex-col md:flex-row gap-6">
+                            <InputIcon
+                                icon={
+                                    <User className="h-8 w-8 text-white border-2 border-white rounded-full p-1" />
+                                }
+                                type="text"
+                                placeholder="Usuario"
+                                value={user}
+                                onChange={(e) => setUser(e.target.value)}
+                            />
+
+                            <InputIcon
+                                icon={
+                                    <Lock className="h-8 w-8 text-white border-2 border-white rounded-full p-1" />
+                                }
+                                type="password"
+                                placeholder="Contraseña"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Recuperar contraseña */}
+                        <div className="flex justify-end mt-3">
+                            <a
+                                href="#"
+                                className="text-white text-sm underline hover:opacity-80"
+                            >
+                                Recuperar contraseña
+                            </a>
+                        </div>
+
+                        {/* Botón */}
+                        <div className="flex justify-center mt-8">
+                            <button
+                                type="submit"
+                                className="px-10 py-2 rounded-full uppercase font-semibold
+                                       bg-brand-gradient text-white
+                                       hover:opacity-90 transition"
+                            >
+                                Ingresar
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                {/* Formulario */}
-                <form className="w-full max-w-md">
-                    <div className="flex gap-4 w-full">
-                        <UserInput
-                            label="Usuario"
-                            type="text"
-                            value={user}
-                            onChange={(e) => setUser(e.target.value)}
-                        />
-                        <UserInput
-                            label="Contraseña"
-                            type="password"
-                            value={""}
-                            onChange={(e) => {}}
-                        />
-                    </div>
-                    <div className="flex justify-center mt-6">
-                        <button className="w-1/2 uppercase bg-brand-gradient text-white py-2 px-4 rounded-lg hover:bg-indigo-700">
-                            Ingresar
-                        </button>
-                    </div>
-                </form>
+            </div>
+            {/* Footer */}
+            <div className="flex-1 flex items-center">
+                <footer className="flex flex-col mt-16 items-center text-center">
+                    <img
+                        src="/images/logos/brief.png"
+                        alt="BriefData"
+                        className="w-24 mb-3"
+                    />
+                    <p className="text-white text-xs opacity-80">
+                        © Copyright 2024. MATEC® Matemáticas y Tecnología
+                        Industrial S.C.
+                    </p>
+                </footer>
             </div>
         </div>
     );
