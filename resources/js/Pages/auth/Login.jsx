@@ -3,91 +3,79 @@ import InputIcon from "../../components/InputLogin";
 import { User, Lock } from "lucide-react";
 
 export default function Login() {
-    const [user, setUser] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log(email, password);
+    };
+
     return (
-        <div
-            className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
-            style={{ backgroundImage: "url('/images/backgrounds/login3.jpg')" }}
-        >
-            {/* Contenedor principal */}
-            <div className="flex-9 flex flex-col items-baseline justify-center">
-                <div className="mt-10">
-                    {/* Logo superior */}
-                    <div className="mb-10 flex items-center justify-center">
-                        <div className="w-32 h-32 rounded-full border-2 border-white flex items-center justify-center">
-                            <img
-                                src="/images/logos/logo.png"
-                                alt="Logo"
-                                className="w-28 h-28 object-cover rounded-full"
+        <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-black">
+            <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6 sm:px-4">
+                <div className="mb-8 sm:mb-10 w-20 h-20 sm:w-28 sm:h-28 rounded-full border-2 border-muted-foreground/40 bg-white flex items-center justify-center overflow-hidden shadow-lg">
+                    <img
+                        src="/images/logos/logo.png"
+                        alt="BriefData Logo"
+                        className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
+                    />
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="flex flex-col sm:flex-row gap-4 w-full max-w-2xl mb-2">
+                        <div className="flex items-center gap-3 border-2 border-white/60 rounded-full px-5 py-3 flex-1 bg-transparent">
+                            <User className="w-5 h-5 text-white shrink-0" />
+                            <div className="w-px h-6 bg-white/60"></div>
+                            <input
+                                type="email"
+                                placeholder="Usuario"
+                                name="email"
+                                className="bg-transparent outline-none text-white placeholder:text-white/70 w-full"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                autoComplete="username"
                             />
                         </div>
-                    </div>
-
-                    {/* Formulario */}
-                    <form className="w-full max-w-3xl">
-                        {/* Inputs en fila */}
-                        <div className="flex flex-col md:flex-row gap-6">
-                            <InputIcon
-                                icon={
-                                    <User className="h-8 w-8 text-white border-2 border-white rounded-full p-1" />
-                                }
-                                type="text"
-                                placeholder="Usuario"
-                                value={user}
-                                onChange={(e) => setUser(e.target.value)}
-                            />
-
-                            <InputIcon
-                                icon={
-                                    <Lock className="h-8 w-8 text-white border-2 border-white rounded-full p-1" />
-                                }
+                        <div className="flex items-center gap-3 border-2 border-white/60 rounded-full px-5 py-3 flex-1 bg-transparent">
+                            <Lock className="w-5 h-5 text-white shrink-0" />
+                            <div className="w-px h-6 bg-white/60"></div>
+                            <input
                                 type="password"
                                 placeholder="Contraseña"
+                                name="password"
+                                autoComplete="current-password"
+                                className="bg-transparent outline-none text-white placeholder:text-white/70 w-full"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
-
-                        {/* Recuperar contraseña */}
-                        <div className="flex justify-end mt-3">
-                            <a
-                                href="#"
-                                className="text-white text-sm underline hover:opacity-80"
-                            >
-                                Recuperar contraseña
-                            </a>
-                        </div>
-
-                        {/* Botón */}
-                        <div className="flex justify-center mt-8">
-                            <button
-                                type="submit"
-                                className="px-10 py-2 rounded-full uppercase font-semibold
-                                       bg-brand-gradient text-white
-                                       hover:opacity-90 transition"
-                            >
-                                Ingresar
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+                </form>
+                <div className="w-full max-w-2xl flex justify-end mb-6">
+                    <button className="text-sm text-foreground/70 underline underline-offset-2 hover:text-foreground transition-colors">
+                        Recuperar Contraseña
+                    </button>
                 </div>
+                <button className="bg-gradient-to-r from-[hsl(32,90%,65%)] to-[hsl(25,85%,58%)] text-primary-foreground font-semibold uppercase tracking-widest px-12 sm:px-16 py-3 rounded-full hover:opacity-90 transition-opacity text-sm w-full sm:w-auto max-w-xs">
+                    Ingresar
+                </button>
             </div>
-            {/* Footer */}
-            <div className="flex-1 flex items-center">
-                <footer className="flex flex-col items-center text-center">
+            <footer className="absolute bottom-6 z-10 flex flex-col items-center gap-2 text-white text-xs">
+                <div className="flex items-center gap-2">
                     <img
                         src="/images/logos/brief.png"
                         alt="BriefData"
-                        className="w-52 mb-3"
+                        className="w-40"
                     />
-                    <p className="text-white text-xs opacity-80">
-                        © Copyright 2024. MATEC® Matemáticas y Tecnología
-                        Industrial S.C.
-                    </p>
-                </footer>
-            </div>
+                    {/* <span className="font-semibold text-white text-sm">
+                        BriefData®
+                    </span> */}
+                </div>
+                <p>
+                    © Copyrigth 2024. MATEC® MATEMÁTICAS Y TECNOLOGÍA INDUSTRIAL
+                    S.C.
+                </p>
+            </footer>
         </div>
     );
 }
