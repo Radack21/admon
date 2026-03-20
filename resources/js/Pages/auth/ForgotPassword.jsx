@@ -1,22 +1,16 @@
 import { useState } from "react";
 import ParticleBackground from "../../components/ParticleBackground";
-import { User, Lock, Eye, EyeOff } from "lucide-react";
+import { User } from "lucide-react";
 import { useForm, Link } from "@inertiajs/react";
 
-export default function Login() {
+export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({
         email: "",
-        password: "",
     });
-    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post("/login");
-    };
-
-    const togglePassword = () => {
-        setShowPassword(!showPassword);
+        post("/forgot-password");
     };
 
     return (
@@ -42,22 +36,35 @@ export default function Login() {
                         </div>
                     </div>
 
-                    {/* Login Form */}
+                    {/* Forgot Password Form */}
                     <form
                         onSubmit={handleSubmit}
                         className="w-full flex flex-col items-center gap-4 lg:gap-6"
                     >
-                        <div className="flex flex-col items-center gap-3.5 w-[80%] sm:gap-4 sm:max-w-120 sm:w-full lg:flex-row lg:gap-5 lg:max-w-215 lg:justify-center">
-                            {/* Usuario Input */}
+                        <div className="text-center mb-2 px-4 max-w-sm">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-2">Recuperar Contraseña</h2>
+                            <p className="text-white/70 text-sm sm:text-base">
+                                Ingresa tu usuario (correo electrónico) y te enviaremos un enlace para restablecerla.
+                            </p>
+                        </div>
+
+                        {status && (
+                            <div className="mb-4 font-medium text-sm text-green-500 max-w-sm text-center">
+                                {status}
+                            </div>
+                        )}
+
+                        <div className="flex flex-col items-center gap-3.5 w-[80%] sm:gap-4 sm:max-w-120 sm:w-full lg:flex-row lg:gap-5 lg:max-w-150 lg:justify-center">
+                            {/* Email / Usuario Input */}
                             <div className="w-full relative">
-                                <div className="flex items-center gap-2 px-4 py-[6.7px] border-2 border-white/70 rounded-[50px] transition-all focus-within:border-white/50 ocus-within:bg-white/2 sm:py-[9.2px] sm:px-[15.8px] sm:gap-1.75 lg:border-[3px] lg:py-3.5 lg:px-6 lg:gap-3">
+                                <div className="flex items-center gap-2 px-4 py-[6.7px] border-2 border-white/70 rounded-[50px] transition-all focus-within:border-white/50 focus-within:bg-white/2 sm:py-[9.2px] sm:px-[15.8px] sm:gap-1.75 lg:border-[3px] lg:py-3.5 lg:px-6 lg:gap-3">
                                     <User className="w-4.5 h-4.5 text-white/60 shrink-0 sm:w-[15.8px] sm:h-[15.8px] lg:w-6 lg:h-6" />
                                     <div className="w-0.5 h-5.5 bg-white/50 shrink-0"></div>
                                     <input
-                                        type="text"
-                                        placeholder="Usuario"
+                                        type="email"
+                                        placeholder="Usuario (Correo electrónico)"
                                         required
-                                        autoComplete="username"
+                                        autoComplete="email"
                                         className="flex-1 min-w-0 bg-transparent border-none outline-none text-white text-[9.8px] sm:text-[10.5px] lg:text-base placeholder:text-white/40"
                                         value={data.email}
                                         onChange={(e) =>
@@ -71,56 +78,25 @@ export default function Login() {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Password Input */}
-                            <div className="w-full relative">
-                                <div className="flex items-center gap-2 px-4 py-[6.7px] border-2 border-white/70 rounded-[50px] transition-all focus-within:border-white/50 focus-within:bg-white/2 sm:py-[9.2px] sm:px-[15.8px] sm:gap-1.75 lg:border-[3px] lg:py-3.5 lg:px-6 lg:gap-3">
-                                    <Lock className="w-4.5 h-4.5 text-white/60 shrink-0 sm:w-[15.8px] sm:h-[15.8px] lg:w-6 lg:h-6" />
-                                    <div className="w-0.5 h-5.5 bg-white/50 shrink-0"></div>
-                                    <input
-                                        type={
-                                            showPassword ? "text" : "password"
-                                        }
-                                        placeholder="Contraseña"
-                                        required
-                                        autoComplete="current-password"
-                                        className="flex-1 min-w-0 bg-transparent border-none outline-none text-white text-[9.8px] sm:text-[10.5px] lg:text-base placeholder:text-white/40"
-                                        value={data.password}
-                                        onChange={(e) =>
-                                            setData("password", e.target.value)
-                                        }
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={togglePassword}
-                                        className="cursor-pointer text-white/60 hover:text-white shrink-0 focus:outline-none"
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="w-4.5 h-4.5 sm:w-[15.8px] sm:h-[15.8px] lg:w-6 lg:h-6" />
-                                        ) : (
-                                            <Eye className="w-4.5 h-4.5 sm:w-[15.8px] sm:h-[15.8px] lg:w-6 lg:h-6" />
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
-                        {/* Forgot password */}
-                        <div className="w-[80%] text-right -mt-3 sm:max-w-120 sm:w-full lg:max-w-215 relative">
+                        {/* Back to password */}
+                        <div className="w-[80%] text-right -mt-1 sm:max-w-120 sm:w-full lg:max-w-150 relative">
                             <Link
-                                href="/forgot-password"
+                                href="/login"
                                 className="text-white/60 underline text-[8.4px] transition-colors hover:text-orange-500 sm:text-[9.2px] lg:text-sm"
                             >
-                                Recuperar Contraseña
+                                Regresar al Login
                             </Link>
                         </div>
 
+                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={processing}
-                            className={`w-1/2 max-w-[50%] py-[7.3px] px-5 bg-linear-to-r from-orange-500 to-[#b83030] border-none rounded-[50px] text-white/85 text-[9.8px] font-semibold uppercase tracking-[0.5px] cursor-pointer transition-all shadow-[0_4px_20px_rgba(249,115,22,0.2)] mt-2 hover:from-orange-500 hover:to-red-500 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(249,115,22,0.5)] hover:text-white active:translate-y-0 ${processing ? 'opacity-50 cursor-not-allowed' : ''} sm:w-full sm:max-w-[131px] sm:py-[9.2px] sm:px-[21px] sm:text-[10.5px] lg:max-w-[200px] lg:py-3.5 lg:px-8 lg:text-base lg:mt-4`}
+                            className={`w-1/2 max-w-[50%] py-[7.3px] px-5 bg-linear-to-r from-orange-500 to-[#b83030] border-none rounded-[50px] text-white/85 text-[9.8px] font-semibold uppercase tracking-[0.5px] cursor-pointer transition-all shadow-[0_4px_20px_rgba(249,115,22,0.2)] mt-2 hover:from-orange-500 hover:to-red-500 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(249,115,22,0.5)] hover:text-white active:translate-y-0 ${processing ? 'opacity-50 cursor-not-allowed' : ''} sm:w-full sm:max-w-[150px] sm:py-[9.2px] sm:px-[21px] sm:text-[10.5px] lg:max-w-[220px] lg:py-3.5 lg:px-8 lg:text-base lg:mt-4`}
                         >
-                            {processing ? 'INGRESANDO...' : 'INGRESAR'}
+                            {processing ? 'ENVIANDO...' : 'ENVIAR ENLACE'}
                         </button>
                     </form>
                 </main>

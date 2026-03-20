@@ -1,4 +1,8 @@
+import { usePage } from "@inertiajs/react";
+
 export default function Home() {
+    const { auth } = usePage().props;
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="text-center">
@@ -8,6 +12,7 @@ export default function Home() {
                 <p className="text-gray-600">
                     Tu aplicación está lista para comenzar
                 </p>
+                <p>{JSON.stringify(auth)}</p>
             </div>
         </div>
     );
