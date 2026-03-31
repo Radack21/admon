@@ -1,0 +1,139 @@
+export default function IconIngresos({ className, ...props }) {
+  return (
+    <svg className={`icon-svg ${className || ""}`} {...props}
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    {/* factura trasera */}
+                    <rect
+                      x="20"
+                      y="14"
+                      width="28"
+                      height="36"
+                      rx="3"
+                      fill="#5A7A3A"
+                      fillOpacity="0.2"
+                    />
+                    {/* factura principal */}
+                    <rect
+                      x="12"
+                      y="10"
+                      width="28"
+                      height="38"
+                      rx="3"
+                      fill="#5A7A3A"
+                      fillOpacity="0.45"
+                    />
+                    {/* header */}
+                    <rect
+                      x="12"
+                      y="10"
+                      width="28"
+                      height="9"
+                      rx="3"
+                      fill="#5A7A3A"
+                      fillOpacity="0.7"
+                    />
+                    <rect
+                      x="12"
+                      y="15"
+                      width="28"
+                      height="4"
+                      fill="#5A7A3A"
+                      fillOpacity="0.7"
+                    />
+                    {/* líneas */}
+                    <rect
+                      x="17"
+                      y="24"
+                      width="18"
+                      height="2.5"
+                      rx="1.2"
+                      fill="#5A7A3A"
+                      fillOpacity="0.55"
+                    />
+                    <rect
+                      x="17"
+                      y="29"
+                      width="13"
+                      height="2"
+                      rx="1"
+                      fill="#5A7A3A"
+                      fillOpacity="0.4"
+                    />
+                    <rect
+                      x="17"
+                      y="34"
+                      width="16"
+                      height="2"
+                      rx="1"
+                      fill="#5A7A3A"
+                      fillOpacity="0.35"
+                    />
+                    <rect
+                      x="17"
+                      y="39"
+                      width="10"
+                      height="2"
+                      rx="1"
+                      fill="#5A7A3A"
+                      fillOpacity="0.28"
+                    />
+                    <rect
+                      x="12"
+                      y="43"
+                      width="28"
+                      height="1"
+                      rx="0.5"
+                      fill="#5A7A3A"
+                      fillOpacity="0.45"
+                    />
+                    <rect
+                      x="17"
+                      y="45"
+                      width="18"
+                      height="2.5"
+                      rx="1.2"
+                      fill="#5A7A3A"
+                      fillOpacity="0.65"
+                    />
+                    {/* zigzag */}
+                    <path
+                      d="M12 49 L14 52 L16 49 L18 52 L20 49 L22 52 L24 49 L26 52 L28 49 L30 52 L32 49 L34 52 L36 49 L38 52 L40 49"
+                      fill="none"
+                      stroke="#5A7A3A"
+                      strokeWidth="1.2"
+                      strokeOpacity="0.4"
+                      strokeLinejoin="round"
+                    />
+                    {/* acento: badge $ */}
+                    <circle cx="50" cy="22" r="10" fill="#B5F542" />
+                    <path
+                      d="M54 17 Q54 14.5 50 14.5 Q46 14.5 46 17 Q46 19.5 50 19.5 Q54 19.5 54 22 Q54 25 50 25 Q46 25 46 22"
+                      fill="none"
+                      stroke="#0a1404"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="50"
+                      y1="12"
+                      x2="50"
+                      y2="15"
+                      stroke="#0a1404"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="50"
+                      y1="24"
+                      x2="50"
+                      y2="27"
+                      stroke="#0a1404"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+  );
+}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ParticleBackground from "../../components/ParticleBackground";
+import ParticleBackground from "@/Components/ParticleBackground";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { useForm, Link } from "@inertiajs/react";
 
@@ -118,9 +118,9 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={processing}
-                            className={`w-1/2 max-w-[50%] py-[7.3px] px-5 bg-linear-to-r from-orange-500 to-[#b83030] border-none rounded-[50px] text-white/85 text-[9.8px] font-semibold uppercase tracking-[0.5px] cursor-pointer transition-all shadow-[0_4px_20px_rgba(249,115,22,0.2)] mt-2 hover:from-orange-500 hover:to-red-500 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(249,115,22,0.5)] hover:text-white active:translate-y-0 ${processing ? 'opacity-50 cursor-not-allowed' : ''} sm:w-full sm:max-w-[131px] sm:py-[9.2px] sm:px-[21px] sm:text-[10.5px] lg:max-w-[200px] lg:py-3.5 lg:px-8 lg:text-base lg:mt-4`}
+                            className={`w-1/2 max-w-[50%] py-[7.3px] px-5 bg-linear-to-r from-orange-500 to-[#b83030] border-none rounded-[50px] text-white/85 text-[9.8px] font-semibold uppercase tracking-[0.5px] cursor-pointer transition-all shadow-[0_4px_20px_rgba(249,115,22,0.2)] mt-2 hover:from-orange-500 hover:to-red-500 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(249,115,22,0.5)] hover:text-white active:translate-y-0 ${processing ? "opacity-50 cursor-not-allowed" : ""} sm:w-full sm:max-w-[131px] sm:py-[9.2px] sm:px-[21px] sm:text-[10.5px] lg:max-w-[200px] lg:py-3.5 lg:px-8 lg:text-base lg:mt-4`}
                         >
-                            {processing ? 'INGRESANDO...' : 'INGRESAR'}
+                            {processing ? "INGRESANDO..." : "INGRESAR"}
                         </button>
                     </form>
                 </main>

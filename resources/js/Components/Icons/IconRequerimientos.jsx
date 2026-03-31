@@ -1,0 +1,110 @@
+export default function IconRequerimientos({ className, ...props }) {
+  return (
+    <svg className={`icon-svg ${className || ""}`} {...props}
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    {/* columna 1 */}
+                    <rect
+                      x="8"
+                      y="16"
+                      width="14"
+                      height="4"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.8"
+                    />
+                    <rect
+                      x="8"
+                      y="23"
+                      width="14"
+                      height="9"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.45"
+                    />
+                    <rect
+                      x="8"
+                      y="35"
+                      width="14"
+                      height="9"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.3"
+                    />
+                    <rect
+                      x="8"
+                      y="47"
+                      width="14"
+                      height="6"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.2"
+                    />
+                    {/* columna 2 */}
+                    <rect
+                      x="25"
+                      y="16"
+                      width="14"
+                      height="4"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.8"
+                    />
+                    <rect
+                      x="25"
+                      y="23"
+                      width="14"
+                      height="9"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.45"
+                    />
+                    <rect
+                      x="25"
+                      y="35"
+                      width="14"
+                      height="9"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.3"
+                    />
+                    {/* columna 3 */}
+                    <rect
+                      x="42"
+                      y="16"
+                      width="14"
+                      height="4"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.8"
+                    />
+                    <rect
+                      x="42"
+                      y="23"
+                      width="14"
+                      height="9"
+                      rx="2"
+                      fill="#D4A017"
+                      fillOpacity="0.45"
+                    />
+                    {/* acento: badge check */}
+                    <circle
+                      cx="32"
+                      cy="27"
+                      r="7"
+                      fill="#FFF176"
+                      fillOpacity="0.95"
+                    />
+                    <path
+                      d="M28 27 L31 30 L37 23"
+                      fill="none"
+                      stroke="#1a1400"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+  );
+}
