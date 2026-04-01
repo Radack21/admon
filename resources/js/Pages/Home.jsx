@@ -14,6 +14,7 @@ import {
     IconResultados,
     IconSprints,
 } from "@/Components/Icons";
+import Footer from "../Components/ui/Footer";
 
 export default function Home() {
     const { auth } = usePage().props;
@@ -66,6 +67,9 @@ export default function Home() {
                     />
                 </div>
             </main>
+            <footer>
+                <Footer />
+            </footer>
         </div>
     );
 }

@@ -26,6 +26,16 @@
     50%      { transform: scale(1.03); opacity: 0.45; }
 }
 
+@keyframes logoRadialFade {
+        from { opacity: 0; transform: scale(0.4); filter: blur(4px); }
+        to   { opacity: 1; transform: scale(1); filter: blur(0px); }
+    }
+
+@keyframes brandTextFade {
+    from { opacity: 0; letter-spacing: 4px; }
+    to   { opacity: 1; letter-spacing: normal; }
+}
+
 /* Evitar fondo azul del autocompletado del navegador */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -63,6 +73,16 @@ input:-webkit-autofill:active {
         animation: grainShift 0.12s steps(1) infinite;
         will-change: transform; /* Optimización extra para el movimiento */
         transform: translateZ(0);
+    }
+
+    /* Animación del avatar (Zoom + Fade radial) */
+    .animate-logo-radial {
+        animation: logoRadialFade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+    }
+
+    /* Animación del texto y botón (Fade + Letter Spacing) */
+    .animate-brand-text {
+        animation: brandTextFade 0.4s ease 0.4s both;
     }
         
 }
