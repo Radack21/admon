@@ -23,7 +23,7 @@ export default function Home() {
             <MenuBackGround />
             <Header user={auth.user} />
 
-            <main className="relative z-10 flex min-h-screen flex-col items-center justify-center pt-20">
+            <main className="relative z-10 flex min-h-screen flex-col items-center justify-center pt-20 animate-slide-up">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-x-28 gap-y-16">
                     <MenuItem
                         label="Clientes"

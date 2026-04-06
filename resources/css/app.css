@@ -36,6 +36,26 @@
     to   { opacity: 1; letter-spacing: normal; }
 }
 
+@keyframes slideFromBottom {
+    0% {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pageFadeIn {
+    from { 
+        opacity: 0; 
+    }
+    to { 
+        opacity: 1; 
+    }
+}
+
 /* Evitar fondo azul del autocompletado del navegador */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -82,7 +102,14 @@ input:-webkit-autofill:active {
 
     /* Animación del texto y botón (Fade + Letter Spacing) */
     .animate-brand-text {
-        animation: brandTextFade 0.4s ease 0.4s both;
+        animation: brandTextFade 0.4s ease 0.1s both;
     }
         
+    .animate-slide-up {
+        animation: slideFromBottom 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
+    }
+
+    .fade-in-delayed {
+        animation: pageFadeIn 0.9s ease 1.2s both;
+    }
 }

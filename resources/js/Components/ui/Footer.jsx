@@ -63,7 +63,7 @@ export default function Footer() {
                 FOOTER MÓVIL 
             ========================================= */}
             <div className="sm:hidden flex flex-col items-center gap-1 w-full px-4 pt-6 pb-[calc(16px+env(safe-area-inset-bottom))] mt-2 pointer-events-none">
-                <p className="text-[9px] tracking-[0.10em] text-white/35 text-center whitespace-nowrap">
+                <p className="text-[9px] tracking-[0.10em] text-white/35 text-center whitespace-nowrap animate-[pageFadeIn_0.9s_ease_1.2s_both]">
                     {timeString}
                 </p>
 

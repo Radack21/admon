@@ -2,48 +2,64 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "@inertiajs/react";
 
 export default function Logo() {
-    // Usamos refs para medir el ancho real del contenido (igual que en SessionWidget)
     const contentRef = useRef(null);
-    const [widgetWidth, setWidgetWidth] = useState(58); // Ancho inicial para el círculo
+    const [widgetWidth, setWidgetWidth] = useState(58);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Estado para manejar el error de carga de la imagen
-    const [imgError, setImgError] = useState(false);
-
     useEffect(() => {
-        // Retardo de 750ms para empezar a abrir la cápsula
-        const timer = setTimeout(() => {
-            if (contentRef.current) {
-                const exactWidth = contentRef.current.scrollWidth;
-                setWidgetWidth(exactWidth);
-                setIsExpanded(true);
+        const handleResize = () => {
+            // Solo medimos y expandimos si es Desktop/Tablet (> 640px)
+            if (window.innerWidth > 640) {
+                const timer = setTimeout(() => {
+                    if (contentRef.current) {
+                        const exactWidth = contentRef.current.scrollWidth;
+                        setWidgetWidth(300);
+                        setIsExpanded(true);
+                    }
+                }, 350);
+                return () => clearTimeout(timer);
+            } else {
+                // En móvil forzamos el estado colapsado
+                setWidgetWidth(58);
+                setIsExpanded(false);
             }
-        }, 750);
+        };
 
-        return () => clearTimeout(timer);
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     return (
         <Link
-            href={route("home")} // O la ruta a tu inicio
-            style={{ width: `${widgetWidth}px` }}
+            href={route("home")}
+            style={{
+                width: window.innerWidth > 640 ? `${widgetWidth}px` : "54px",
+            }}
             className="
-                fixed top-4 left-4 sm:top-5 sm:left-5 z-[100] 
-                bg-white/5 backdrop-blur-[20px] 
-                border border-white/15 rounded-full 
-                shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]
-                overflow-hidden
-                /* Animamos la propiedad 'width' exacta hacia la derecha */
-                transition-[width] duration-[550ms] ease-[cubic-bezier(0.4,0,0.2,1)]
-                focus:outline-none focus:ring-2 focus:ring-[#F97316]/50
+                fixed top-5 left-5 z-[100] 
+                flex items-center
+                /* Transición fluida de todas las propiedades */
+                transition-all duration-[550ms] ease-[cubic-bezier(0.4,0,0.2,1)]
+                
+                /* Estilos Desktop (>640px) */
+                sm:bg-white/5 sm:backdrop-blur-[20px] 
+                sm:border sm:border-white/15 rounded-full 
+                sm:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]
+                
+                /* Estilos Móvil (<640px) - Forzado a Círculo */
+                max-sm:w-[54px] max-sm:h-[54px] max-sm:p-[6px] max-sm:justify-center
+                max-sm:bg-[#140a05]/75 max-sm:backdrop-blur-[20px] 
+                max-sm:border max-sm:border-white/12 max-sm:shadow-2xl
+                
+                overflow-hidden focus:outline-none
             "
         >
-            {/* Contenedor interior medible (w-max) */}
             <div
                 ref={contentRef}
                 className="flex items-center gap-3.5 sm:py-2.5 sm:pl-2.5 sm:pr-6 w-max"
             >
-                {/* Círculo del Logo */}
+                {/* Círculo del Logo - Escala responsiva */}
                 <div
                     className="
                         relative flex items-center justify-center shrink-0
@@ -60,27 +76,25 @@ export default function Logo() {
                     />
                 </div>
 
-                {/* Textos de la Marca (Ocultos en móvil) */}
+                {/* Textos: Ocultos por completo en móvil via 'hidden sm:flex' */}
                 <div
-                    className={`hidden sm:flex flex-col gap-[2px] ${isExpanded ? "animate-brand-text" : "opacity-0"}`}
+                    className={`hidden sm:flex flex-col gap-[2px] transition-opacity duration-300 ${
+                        isExpanded
+                            ? "animate-brand-text opacity-100"
+                            : "opacity-0"
+                    }`}
                 >
-                    {/* Nombre: BriefData® */}
                     <div className="text-[17px] font-bold leading-none flex items-start">
-                        {/* 'Brief' en blanco sólido */}
                         <span className="text-white tracking-[-0.2px]">
                             Brief
                         </span>
-                        {/* 'Data' en gradiente naranja/rojo */}
                         <span className="bg-gradient-to-r from-[#F97316] to-[#EF4444] bg-clip-text text-transparent tracking-[-0.3px]">
                             Data
                         </span>
-                        {/* Símbolo ® - Ajuste milimétrico */}
                         <span className="text-[4.5px] font-normal text-white/40 ml-[2px] relative top-[2px]">
                             ®
                         </span>
                     </div>
-
-                    {/* Tagline */}
                     <div className="text-[8.5px] font-medium text-white/40 uppercase tracking-[1.2px]">
                         Business Intelligence
                     </div>
