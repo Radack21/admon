@@ -19,12 +19,12 @@ import Footer from "../Components/ui/Footer";
 export default function Home() {
     const { auth } = usePage().props;
     return (
-        <div>
+        <div className="flex flex-col min-h-dvh overflow-x-hidden">
             <MenuBackGround />
             <Header user={auth.user} />
 
-            <main className="relative z-10 flex min-h-screen flex-col items-center justify-center pt-20 animate-slide-up">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-28 gap-y-16">
+            <main className="relative z-10 flex flex-1 flex-col items-center justify-center p-4 md:pt-20 animate-slide-up">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-24 sm:gap-x-18 md:gap-x-28 gap-y-4 md:gap-y-14">
                     <MenuItem
                         label="Clientes"
                         icon={IconClientes}
