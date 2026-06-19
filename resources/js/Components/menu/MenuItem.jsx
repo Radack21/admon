@@ -16,9 +16,11 @@ export default function MenuItem({
             }}
         >
             <div
+                style={{
+                    boxShadow: `0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 1px ${accentColor}61, 0 0 22px ${accentColor}2e`,
+                }}
                 className="relative flex items-center justify-center w-[82px] h-[82px] rounded-full mb-3
-                            bg-[#646469]/20 backdrop-blur-[18px] border-[1.5px] border-white/20
-                            shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-1px_0_rgba(0,0,0,0.15)]
+                            bg-[#646469]/20 backdrop-blur-[18px] border-[1.5px] border-white/18
                             transition-all duration-300 cubic-bezier(0.4,0,0.2,1) overflow-hidden
                             group-hover:scale-105 group-hover:bg-[#828287]/30 group-hover:border-white/30
                             group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.28),0_0_20px_var(--accent-glow)]"

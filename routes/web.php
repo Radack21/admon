@@ -25,3 +25,7 @@ Route::post('/reset-password', [App\Http\Controllers\Auth\NewPasswordController:
 Route::get('/home', function () {
     return inertia('Home');
 })->middleware(['auth'])->name('home');
+
+Route::get('/ingresos', function () {
+    return inertia('Ingresos/Index');
+})->middleware(['auth'])->name('ingresos.index');

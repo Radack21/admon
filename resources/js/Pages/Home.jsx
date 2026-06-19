@@ -34,6 +34,7 @@ export default function Home() {
                         label="Ingresos"
                         icon={IconIngresos}
                         accentColor="#B5F542"
+                        href={route("ingresos.index")}
                     />
                     <MenuItem
                         label="Egresos"
