@@ -57,7 +57,7 @@ export default function UserCapsule({ user }) {
                 ${isExpanded ? "rounded-full" : "rounded-full"}
                 
                 /* Estilos Desktop (>640px) */
-                sm:h-auto sm:bg-white/5 sm:border-white/15 sm:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]
+                sm:h-auto sm:bg-white/5 sm:backdrop-blur-[20px] sm:border sm:border-white/15 sm:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]
                 
                 /* Estilos Móvil (<640px) - Forzado a Círculo Perfecto y Oscuro */
                 max-sm:w-[54px] max-sm:h-[54px] max-sm:p-[6px] max-sm:justify-center max-sm:items-center max-sm:flex

@@ -7,7 +7,7 @@ dayjs.locale("es");
 
 export default function AnimatedHeader({ breadcrumb = "Ingresos" }) {
     const { auth } = usePage().props;
-    const [phase, setPhase] = useState("widgets"); // widgets | fading | final
+    const [phase, setPhase] = useState("pills");
     const [showDatetime, setShowDatetime] = useState(false);
     const [timeStr, setTimeStr] = useState("");
     const [dayStr, setDayStr] = useState("");
@@ -24,31 +24,38 @@ export default function AnimatedHeader({ breadcrumb = "Ingresos" }) {
         : "IR";
 
     useEffect(() => {
-        // Fase 1+2: widgets se expanden (0.2s + 1.5s) y deslizan (1.7s + 0.5s) = 2.2s
-        const swapTimer = setTimeout(() => {
-            setPhase("fading");
-        }, 2200);
+        // 0.1s: Píldoras empiezan a expandirse
+        const expandTimer = setTimeout(() => {
+            setPhase("expanding");
+            // Forzar transición: aplicar la clase de transición después del primer render
+        }, 100);
 
-        // Fase 3: widgets desaparecen, header final aparece (0.2s después)
+        // 1.0s: Crossfade widgets → FinalHeader
+        const crossfadeTimer = setTimeout(() => {
+            setPhase("crossfade");
+        }, 1000);
+
+        // 1.5s: Solo FinalHeader
         const finalTimer = setTimeout(() => {
             setPhase("final");
-        }, 2400);
+        }, 1500);
 
-        // Datetime aparece con fade radial 0.3s después del header
+        // 1.8s: Datetime con fade radial
         const dtTimer = setTimeout(() => {
             setShowDatetime(true);
-        }, 2700);
+        }, 1800);
 
         return () => {
-            clearTimeout(swapTimer);
+            clearTimeout(expandTimer);
+            clearTimeout(crossfadeTimer);
             clearTimeout(finalTimer);
             clearTimeout(dtTimer);
         };
     }, []);
 
-    // Reloj (solo arranca cuando el header final aparece)
+    // Reloj arranca en crossfade
     useEffect(() => {
-        if (phase !== "final") return;
+        if (phase !== "crossfade" && phase !== "final") return;
         const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
         const tick = () => {
@@ -62,29 +69,61 @@ export default function AnimatedHeader({ breadcrumb = "Ingresos" }) {
         return () => clearInterval(id);
     }, [phase]);
 
-    if (phase === "final") {
-        return <FinalHeader breadcrumb={breadcrumb} initials={initials} timeStr={timeStr} dayStr={dayStr} dateStr={dateStr} showDatetime={showDatetime} />;
-    }
+    const showWidgets = phase === "pills" || phase === "expanding" || phase === "crossfade";
+    const showFinalHeader = phase === "crossfade" || phase === "final";
 
-    return <AnimatedWidgets phase={phase} initials={initials} />;
-}
-
-/* ── Fase 1+2: Widgets animados ── */
-function AnimatedWidgets({ phase, initials }) {
-    const isVisible = phase === "widgets";
     return (
         <>
-            {/* Fondo compartido del header — evita doble backdrop */}
+            {showWidgets && <AnimatedWidgets phase={phase} initials={initials} />}
+            {showFinalHeader && (
+                <FinalHeader
+                    breadcrumb={breadcrumb}
+                    initials={initials}
+                    timeStr={timeStr}
+                    dayStr={dayStr}
+                    dateStr={dateStr}
+                    showDatetime={showDatetime}
+                />
+            )}
+        </>
+    );
+}
+
+/* ── Fases pills → expanding → crossfade ── */
+function AnimatedWidgets({ phase, initials }) {
+    const isPills = phase === "pills";
+    const isExpanding = phase === "expanding";
+    const isCrossfading = phase === "crossfade";
+
+    // Vidrio de las píldoras (idéntico al Home)
+    const glass =
+        "bg-white/5 backdrop-blur-[20px] border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]";
+
+    // Solo en fase "pills" las cápsulas tienen vidrio propio
+    const brandGlass = isPills ? glass : "bg-transparent border-transparent shadow-none";
+    const brandPos = isPills ? "left-5" : "left-0";
+    const brandRadius = isPills ? "rounded-full" : "";
+    const transition = isExpanding ? "transition-all duration-700 ease-out" : "";
+    const fadeOut = isCrossfading ? "animate-widget-fadeout" : "";
+    const opacity = isCrossfading ? "" : "opacity-100";
+
+    // Barra de fondo unificada: invisible en pills, aparece en expanding
+    const barVisible = !isPills;
+    const barFadeOut = isCrossfading ? "animate-widget-fadeout" : "";
+
+    return (
+        <>
+            {/* Barra de vidrio unificada — aparece al expandir */}
             <div
-                className="fixed top-0 left-0 w-full h-[58px] z-[99] bg-white/5 backdrop-blur-[20px] border-b border-white/15 pointer-events-none animate-header-bg max-sm:hidden"
+                className={`fixed top-0 left-0 w-full h-[58px] z-[99] bg-white/5 backdrop-blur-[20px] border-b border-white/15 pointer-events-none max-sm:hidden transition-opacity duration-500 ${barFadeOut} ${
+                    barVisible ? "opacity-100" : "opacity-0"
+                }`}
             />
 
-            {/* Brand Widget (izquierda) */}
+            {/* Brand Píldora (izquierda) */}
             <div
-                className={`fixed top-0 left-1/2 -translate-x-full z-[100] flex items-center gap-3 py-2.5 pl-[30px] pr-5 whitespace-nowrap overflow-hidden animate-brand-expand max-sm:hidden transition-opacity duration-200 ${
-                    isVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-                }`}
-                style={{ width: "50%" }}
+                className={`fixed top-0 z-[100] flex items-center gap-3 py-2.5 pl-[30px] pr-5 whitespace-nowrap overflow-hidden max-sm:hidden ${brandPos} ${brandGlass} ${brandRadius} ${transition} ${fadeOut} ${opacity}`}
+                style={{ width: isPills ? "auto" : "50%" }}
             >
                 <div className="w-[38px] h-[38px] rounded-full bg-white flex items-center justify-center shrink-0 shadow-[0_0_0_2px_rgba(249,115,22,0.35),0_4px_12px_rgba(0,0,0,0.3)] overflow-hidden">
                     <img
@@ -105,12 +144,10 @@ function AnimatedWidgets({ phase, initials }) {
                 </div>
             </div>
 
-            {/* Session Widget (derecha) */}
+            {/* Session Píldora (derecha) */}
             <div
-                className={`fixed top-0 right-0 z-[100] flex items-center justify-end gap-3 py-2.5 pl-2.5 pr-[36px] whitespace-nowrap overflow-hidden animate-session-expand max-sm:hidden transition-opacity duration-200 ${
-                    isVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-                }`}
-                style={{ width: "50%" }}
+                className={`fixed top-0 z-[100] flex items-center justify-end gap-3 py-2.5 pl-2.5 pr-[36px] whitespace-nowrap overflow-hidden max-sm:hidden ${brandPos === "left-5" ? "right-5" : "right-0"} ${brandGlass} ${brandRadius} ${transition} ${fadeOut} ${opacity}`}
+                style={{ width: isPills ? "auto" : "50%" }}
             >
                 <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-[#F97316] to-[#b83030] flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-[0_0_0_2px_rgba(249,115,22,0.4)] tracking-[0.5px] font-outfit">
                     {initials}
@@ -124,7 +161,7 @@ function AnimatedWidgets({ phase, initials }) {
                     </span>
                 </div>
                 <div className="w-px h-7 bg-white/15 shrink-0" />
-                <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 border-[1.5px] border-white/25 rounded-[25px] bg-black/30 backdrop-blur-[10px] text-white/75 text-[11px] font-medium cursor-pointer transition-all hover:border-red-500/60 hover:bg-red-500/12 hover:text-white shrink-0 font-outfit tracking-[0.3px]">
+                <button className="inline-flex items-center gap-1.5 py-[5px] px-[14px] border-[1.5px] border-white/25 rounded-[25px] bg-black/30 backdrop-blur-[10px] text-white/75 text-[11px] font-medium cursor-pointer transition-all hover:border-red-500/60 hover:bg-red-500/12 hover:text-white shrink-0 font-outfit tracking-[0.3px]">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                         <polyline points="16 17 21 12 16 7"/>
@@ -134,8 +171,8 @@ function AnimatedWidgets({ phase, initials }) {
                 </button>
             </div>
 
-            {/* Widgets móvil (círculos colapsados, igual que el Home) */}
-            <MobileWidgets initials={initials} isVisible={isVisible} />
+            {/* Widgets móvil */}
+            <MobileWidgets initials={initials} isVisible={!isCrossfading && isPills} />
         </>
     );
 }
@@ -144,7 +181,6 @@ function AnimatedWidgets({ phase, initials }) {
 function MobileWidgets({ initials, isVisible }) {
     return (
         <>
-            {/* Logo círculo izquierda */}
             <Link
                 href={route("home")}
                 className={`sm:hidden fixed top-[14px] left-[14px] z-[100] w-[54px] h-[54px] p-[6px] rounded-full bg-[#140a05]/75 backdrop-blur-[20px] border border-white/12 shadow-2xl flex items-center justify-center transition-opacity duration-200 ${
@@ -160,7 +196,6 @@ function MobileWidgets({ initials, isVisible }) {
                 </div>
             </Link>
 
-            {/* Avatar círculo derecha */}
             <Link
                 href={route("logout")}
                 method="post"
@@ -177,31 +212,32 @@ function MobileWidgets({ initials, isVisible }) {
     );
 }
 
-/* ── Fase 3: Header final unificado ── */
+/* ── Header final unificado — idéntico a los widgets ── */
 function FinalHeader({ breadcrumb, initials, timeStr, dayStr, dateStr, showDatetime }) {
     return (
-        <header className="fixed top-0 left-0 right-0 z-[200] h-14 flex items-center bg-black/40 backdrop-blur-[10px] border-b border-orange-700/20 overflow-hidden animate-header-final">
+        <header className="fixed top-0 left-0 right-0 z-[200] h-[58px] flex items-center bg-white/5 backdrop-blur-[20px] border-b border-white/15 overflow-hidden animate-header-final">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_22%_60%,rgba(231,96,35,0.12)_0%,transparent_50%)] pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(231,96,35,0.25)_1px,transparent_1px)] bg-[length:80px_34px] bg-[position:5px_6px] opacity-50 pointer-events-none" />
 
-            {/* Left: Logo */}
+            {/* Left: Logo — idéntico al brand widget */}
             <Link
                 href={route("home")}
-                className="relative z-10 flex items-center gap-2.5 shrink-0 pl-[22px] pr-4 min-w-[190px]"
+                className="relative z-10 flex items-center gap-3 shrink-0 pl-[30px] pr-5"
             >
-                <div className="w-[38px] h-[38px] rounded-full bg-white flex items-center justify-center shadow-[0_0_0_2px_rgba(255,255,255,0.2),0_0_16px_rgba(0,0,0,0.3)]">
+                <div className="w-[38px] h-[38px] rounded-full bg-white flex items-center justify-center shrink-0 shadow-[0_0_0_2px_rgba(249,115,22,0.35),0_4px_12px_rgba(0,0,0,0.3)] overflow-hidden">
                     <img
                         src="https://matecsoluciones.mx/Admon/imagenes/LogoIntro.png"
                         alt="Logo"
-                        className="w-[26px] h-[26px] object-contain"
+                        className="w-full h-full object-contain"
                     />
                 </div>
-                <div>
-                    <div className="font-space text-[15px] font-bold text-white leading-none tracking-[-0.01em]">
-                        Brief<span className="text-[#c8cacf]">Data</span>
-                        <sup className="text-[7px] font-normal text-white/40 ml-0.5 relative top-[-2px]">®</sup>
+                <div className="flex flex-col gap-px whitespace-nowrap">
+                    <div className="text-[17px] font-bold font-outfit leading-none tracking-[-0.3px] bg-gradient-to-r from-white to-white/75 bg-clip-text text-transparent">
+                        Brief
+                        <span className="bg-gradient-to-r from-[#F97316] to-[#EF4444] bg-clip-text text-transparent">Data</span>
+                        <sup className="text-[8px] font-normal text-white/40 ml-0.5" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)", background: "none" }}>®</sup>
                     </div>
-                    <div className="text-[8px] text-white/30 tracking-[0.2em] uppercase mt-0.5">
+                    <div className="text-[8.5px] font-medium text-white/35 font-outfit uppercase tracking-[1px]">
                         Business Intelligence
                     </div>
                 </div>
@@ -216,47 +252,54 @@ function FinalHeader({ breadcrumb, initials, timeStr, dayStr, dateStr, showDatet
                 <span className="text-[13px] text-[#d0d2d6] font-outfit font-medium">{breadcrumb}</span>
             </div>
 
-            {/* Right: Datetime + User */}
-            <div className="relative z-10 flex items-center gap-3.5 shrink-0 pr-[22px] min-w-[240px] justify-end">
-                {/* Datetime — aparece con fade radial */}
+            {/* Right: Datetime + User — idéntico al session widget */}
+            <div className="relative z-10 flex items-center justify-end gap-3 shrink-0 pr-[36px]">
+                {/* Datetime — fade radial */}
                 <div
-                    className={`flex items-center gap-2.5 transition-opacity ${
+                    className={`flex items-center gap-2.5 ${
                         showDatetime ? "animate-datetime-reveal pointer-events-auto" : "opacity-0 pointer-events-none"
                     }`}
                 >
-                    <div className="flex flex-col items-end leading-tight">
-                        <div className="text-[11px] text-white/45">{dayStr}</div>
-                        <div className="text-[11px] text-white/45">{dateStr}</div>
+                    <div className="flex flex-col items-end gap-px leading-tight">
+                        <div className="text-[9.5px] text-white/45">{dayStr}</div>
+                        <div className="text-[9.5px] text-white/45">{dateStr}</div>
                     </div>
-                    <div className="font-space text-[22px] font-bold text-white tracking-[-0.02em] ml-1">
+                    <div className="font-outfit text-[26px] font-bold text-white tracking-[-1.5px] leading-none ml-1">
                         {timeStr}
                     </div>
                 </div>
 
-                {/* User capsule */}
-                <div className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.11] rounded-[22px] py-1 pr-[13px] pl-1 cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#e76023] to-[#c94e10] flex items-center justify-center text-[10px] font-bold text-white">
-                        {initials}
-                    </div>
-                    <div>
-                        <div className="text-[8px] text-white/30 uppercase tracking-[0.14em]">Sesión activa</div>
-                        <div className="text-xs text-white/90 font-medium leading-none">
-                            {usePage().props.auth?.user?.name || "Isabel Retana"}
-                        </div>
-                    </div>
-                    <Link
-                        href={route("logout")}
-                        method="post"
-                        as="button"
-                        className="ml-1 opacity-45 hover:opacity-100 shrink-0"
-                    >
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <path d="M5 2H2.5A1.5 1.5 0 0 0 1 3.5v7A1.5 1.5 0 0 0 2.5 12H5" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
-                            <path d="M9 4l3 3-3 3" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M12 7H5" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
-                        </svg>
-                    </Link>
+                {/* Avatar — idéntico al session widget */}
+                <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-[#F97316] to-[#b83030] flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-[0_0_0_2px_rgba(249,115,22,0.4)] tracking-[0.5px] font-outfit">
+                    {initials}
                 </div>
+
+                {/* Nombre usuario — inline, sin cápsula */}
+                <div className="flex flex-col gap-px whitespace-nowrap">
+                    <span className="text-[9px] font-medium text-white/40 font-outfit uppercase tracking-[0.8px]">
+                        Sesión activa
+                    </span>
+                    <span className="text-[13px] font-semibold text-white font-outfit whitespace-nowrap">
+                        {usePage().props.auth?.user?.name || "Isabel Retana"}
+                    </span>
+                </div>
+
+                <div className="w-px h-7 bg-white/15 shrink-0" />
+
+                {/* Logout — idéntico al session widget */}
+                <Link
+                    href={route("logout")}
+                    method="post"
+                    as="button"
+                    className="inline-flex items-center gap-1.5 py-[5px] px-[14px] border-[1.5px] border-white/25 rounded-[25px] bg-black/30 backdrop-blur-[10px] text-white/75 text-[11px] font-medium cursor-pointer transition-all hover:border-red-500/60 hover:bg-red-500/12 hover:text-white shrink-0 font-outfit tracking-[0.3px]"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Cerrar sesión
+                </Link>
             </div>
         </header>
     );
