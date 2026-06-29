@@ -111,19 +111,18 @@ function AnimatedWidgets({ phase, initials }) {
     const brandGlass = isPills ? glass : "bg-transparent border-transparent shadow-none";
     const brandPos = isPills ? "left-5" : "left-0";
     const brandRadius = isPills ? "rounded-full" : "";
-    const transition = isExpanding ? "transition-all duration-700 ease-out" : "";
+    const transition = "transition-all duration-700 ease-out";
     const fadeOut = isCrossfading ? "animate-widget-fadeout" : "";
     const opacity = isCrossfading ? "" : "opacity-100";
 
     // Barra de fondo unificada: invisible en pills, aparece en expanding
     const barVisible = !isPills;
-    const barFadeOut = isCrossfading ? "animate-widget-fadeout" : "";
 
     return (
         <>
             {/* Barra de vidrio unificada — aparece al expandir */}
             <div
-                className={`fixed top-0 left-0 w-full h-[58px] z-[99] bg-white/5 backdrop-blur-[20px] border-b border-white/15 pointer-events-none max-sm:hidden transition-opacity duration-500 ${barFadeOut} ${
+                className={`fixed top-0 left-0 w-full h-[58px] z-[99] bg-white/5 backdrop-blur-[20px] border-b border-white/15 pointer-events-none max-sm:hidden transition-opacity duration-500 ${
                     barVisible ? "opacity-100" : "opacity-0"
                 }`}
             />
