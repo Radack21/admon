@@ -15,6 +15,7 @@ import {
     IconSprints,
 } from "@/Components/Icons";
 import Footer from "../Components/ui/Footer";
+import PageTransition from "@/Components/ui/PageTransition";
 
 export default function Home() {
     const { auth } = usePage().props;
@@ -23,7 +24,7 @@ export default function Home() {
             <MenuBackGround />
             <Header user={auth.user} />
 
-            <main className="relative z-10 flex flex-1 flex-col items-center justify-center p-4 pt-20 animate-slide-up">
+            <PageTransition className="animate-page-enter relative z-10 flex flex-1 flex-col items-center justify-center p-4 pt-20">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-x-24 sm:gap-x-18 md:gap-x-28 gap-y-4 md:gap-y-14">
                     <MenuItem
                         label="Clientes"
@@ -67,7 +68,7 @@ export default function Home() {
                         accentColor="#FFE566"
                     />
                 </div>
-            </main>
+            </PageTransition>
             <footer>
                 <Footer />
             </footer>

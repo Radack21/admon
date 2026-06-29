@@ -9,6 +9,7 @@ export default function AnimatedHeader({ breadcrumb = "Ingresos" }) {
     const { auth } = usePage().props;
     const [phase, setPhase] = useState("pills");
     const [showDatetime, setShowDatetime] = useState(false);
+    const [showBreadcrumb, setShowBreadcrumb] = useState(false);
     const [timeStr, setTimeStr] = useState("");
     const [dayStr, setDayStr] = useState("");
     const [dateStr, setDateStr] = useState("");
@@ -40,16 +41,22 @@ export default function AnimatedHeader({ breadcrumb = "Ingresos" }) {
             setPhase("final");
         }, 1500);
 
-        // 1.8s: Datetime con fade radial
+        // 2.2s: Datetime con fade radial
         const dtTimer = setTimeout(() => {
             setShowDatetime(true);
-        }, 1800);
+        }, 2200);
+
+        // 2.4s: Breadcrumb
+        const bcTimer = setTimeout(() => {
+            setShowBreadcrumb(true);
+        }, 2400);
 
         return () => {
             clearTimeout(expandTimer);
             clearTimeout(crossfadeTimer);
             clearTimeout(finalTimer);
             clearTimeout(dtTimer);
+            clearTimeout(bcTimer);
         };
     }, []);
 
@@ -83,6 +90,7 @@ export default function AnimatedHeader({ breadcrumb = "Ingresos" }) {
                     dayStr={dayStr}
                     dateStr={dateStr}
                     showDatetime={showDatetime}
+                    showBreadcrumb={showBreadcrumb}
                 />
             )}
         </>
@@ -213,7 +221,7 @@ function MobileWidgets({ initials, isVisible }) {
 }
 
 /* ── Header final unificado — idéntico a los widgets ── */
-function FinalHeader({ breadcrumb, initials, timeStr, dayStr, dateStr, showDatetime }) {
+function FinalHeader({ breadcrumb, initials, timeStr, dayStr, dateStr, showDatetime, showBreadcrumb }) {
     return (
         <header className="fixed top-0 left-0 right-0 z-[200] h-[58px] flex items-center bg-white/5 backdrop-blur-[20px] border-b border-white/15 overflow-hidden animate-header-final">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_22%_60%,rgba(231,96,35,0.12)_0%,transparent_50%)] pointer-events-none" />
@@ -244,7 +252,11 @@ function FinalHeader({ breadcrumb, initials, timeStr, dayStr, dateStr, showDatet
             </Link>
 
             {/* Center: Breadcrumb */}
-            <div className="relative z-10 flex-1 flex items-center justify-center gap-1.5">
+            <div
+                className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 ${
+                    showBreadcrumb ? "animate-breadcrumb-reveal" : "opacity-0 pointer-events-none"
+                }`}
+            >
                 <Link href={route("home")} className="text-[13px] text-white/40 font-outfit hover:text-white/70 transition-colors">
                     Inicio
                 </Link>

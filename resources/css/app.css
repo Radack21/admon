@@ -67,6 +67,11 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pageEnter {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Header animation keyframes ── */
 @keyframes headerFadeIn {
     from { opacity: 0; }
@@ -81,6 +86,11 @@
 @keyframes datetimeRadialFade {
     from { opacity: 0; filter: blur(8px); transform: scale(0.92); }
     to   { opacity: 1; filter: blur(0px); transform: scale(1); }
+}
+
+@keyframes breadcrumbReveal {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Evitar fondo azul del autocompletado del navegador */
@@ -142,6 +152,18 @@ input:-webkit-autofill:active {
 
     .animate-widget-fadeout {
         animation: widgetFadeOut 0.4s ease both;
+    }
+
+    .animate-page-enter {
+        animation: pageEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+    }
+
+    .animate-page-enter-module {
+        animation: pageEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.7s both;
+    }
+
+    .animate-breadcrumb-reveal {
+        animation: breadcrumbReveal 0.4s ease both;
     }
 
     .scrollbar-thin::-webkit-scrollbar { width: 4px; }
