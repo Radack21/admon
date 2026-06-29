@@ -111,6 +111,7 @@ function AnimatedWidgets({ phase, initials }) {
     const brandGlass = isPills ? glass : "bg-transparent border-transparent shadow-none";
     const brandPos = isPills ? "left-5" : "left-0";
     const brandRadius = isPills ? "rounded-full" : "";
+    const topPos = isPills ? "top-5" : "top-0";
     const transition = "transition-all duration-700 ease-out";
     const fadeOut = isCrossfading ? "animate-widget-fadeout" : "";
     const opacity = isCrossfading ? "" : "opacity-100";
@@ -129,7 +130,7 @@ function AnimatedWidgets({ phase, initials }) {
 
             {/* Brand Píldora (izquierda) */}
             <div
-                className={`fixed top-0 z-[100] flex items-center gap-3 py-2.5 pl-[30px] pr-5 whitespace-nowrap overflow-hidden max-sm:hidden ${brandPos} ${brandGlass} ${brandRadius} ${transition} ${fadeOut} ${opacity}`}
+                className={`fixed ${topPos} z-[100] flex items-center gap-3 py-2.5 pl-[30px] pr-5 whitespace-nowrap overflow-hidden max-sm:hidden ${brandPos} ${brandGlass} ${brandRadius} ${transition} ${fadeOut} ${opacity}`}
                 style={{ width: isPills ? "auto" : "50%" }}
             >
                 <div className="w-[38px] h-[38px] rounded-full bg-white flex items-center justify-center shrink-0 shadow-[0_0_0_2px_rgba(249,115,22,0.35),0_4px_12px_rgba(0,0,0,0.3)] overflow-hidden">
@@ -153,7 +154,7 @@ function AnimatedWidgets({ phase, initials }) {
 
             {/* Session Píldora (derecha) */}
             <div
-                className={`fixed top-0 z-[100] flex items-center justify-end gap-3 py-2.5 pl-2.5 pr-[36px] whitespace-nowrap overflow-hidden max-sm:hidden ${brandPos === "left-5" ? "right-5" : "right-0"} ${brandGlass} ${brandRadius} ${transition} ${fadeOut} ${opacity}`}
+                className={`fixed ${topPos} z-[100] flex items-center justify-end gap-3 py-2.5 pl-2.5 pr-[36px] whitespace-nowrap overflow-hidden max-sm:hidden ${brandPos === "left-5" ? "right-5" : "right-0"} ${brandGlass} ${brandRadius} ${transition} ${fadeOut} ${opacity}`}
                 style={{ width: isPills ? "auto" : "50%" }}
             >
                 <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-[#F97316] to-[#b83030] flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-[0_0_0_2px_rgba(249,115,22,0.4)] tracking-[0.5px] font-outfit">
