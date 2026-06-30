@@ -31,25 +31,25 @@ export default function AnimatedHeader({ breadcrumb = "Ingresos" }) {
             // Forzar transición: aplicar la clase de transición después del primer render
         }, 100);
 
-        // 1.0s: Crossfade widgets → FinalHeader
+        // 0.4s: Crossfade widgets → FinalHeader
         const crossfadeTimer = setTimeout(() => {
             setPhase("crossfade");
-        }, 1000);
+        }, 400);
 
-        // 1.5s: Solo FinalHeader
+        // 0.9s: Solo FinalHeader
         const finalTimer = setTimeout(() => {
             setPhase("final");
-        }, 1500);
+        }, 900);
 
-        // 2.2s: Datetime con fade radial
+        // 0.4s: Datetime con fade radial
         const dtTimer = setTimeout(() => {
             setShowDatetime(true);
-        }, 2200);
+        }, 400);
 
-        // 2.4s: Breadcrumb
+        // 1.5s: Breadcrumb
         const bcTimer = setTimeout(() => {
             setShowBreadcrumb(true);
-        }, 2400);
+        }, 1500);
 
         return () => {
             clearTimeout(expandTimer);

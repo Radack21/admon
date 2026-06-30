@@ -159,7 +159,7 @@ input:-webkit-autofill:active {
     }
 
     .animate-page-enter-module {
-        animation: pageEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.7s both;
+        animation: pageEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.0s both;
     }
 
     .animate-breadcrumb-reveal {
