@@ -30,6 +30,7 @@ export default function Home() {
                         label="Clientes"
                         icon={IconClientes}
                         accentColor="#4ECDC4"
+                        href={route("clientes.index")}
                     />
                     <MenuItem
                         label="Ingresos"

@@ -61,3 +61,20 @@ resources/
 - `AppHeader.jsx` fue eliminado (código muerto)
 - El Home usa `Header.jsx` → `Logo.jsx` + `UserCapsule.jsx` (píldoras fijas, sin animación)
 - No tocar `Logo.jsx` ni `UserCapsule.jsx` si el cambio es solo del header de páginas internas
+
+## Módulos implementados
+
+### Clientes (`/clientes`)
+- **Página**: `Pages/Clientes/Index.jsx` — 3 tabs (Directorio, Potenciales, Mailing)
+- **Tabla**: `Pages/Clientes/ClientesDataTable.jsx` — columnas: Cliente, Folio, RFC, Estatus, Fecha, Contacto + acciones
+- **Controlador**: `Http/Controllers/Clients/ClientController.php`
+- **API**: `Http/Controllers/Clients/ClientApiController.php` (estados, ciudades, subtipos)
+- **Modelos**: `Client`, `ClientContact`, `ClientSocialNetwork`, `ClientCredential`, `ClientMetadata`, `Mailing`
+- **Catálogos**: `PersonaTipo`, `UsoCfdi`, `SubTipoCliente`, `RegimenFiscal`, `FormaJuridica`, `Ambito`, `Tamanio`, `Sector`, `Clasificacion`, `Rama`, `Pais`, `Estado`, `Ciudad`, `Servicio`
+- **Tabla**: `clients` (unifica Directorio + Potenciales del legacy)
+
+## DB
+
+- Conexión principal: `mariadb` → `migracion` (52.73.109.51)
+- Conexión legacy: `legacy` → `matecsol_Brief` (mismo server, solo lectura para migrar datos)
+- Las credenciales están en `.env`

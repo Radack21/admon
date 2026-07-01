@@ -29,3 +29,21 @@ Route::get('/home', function () {
 Route::get('/ingresos', function () {
     return inertia('Ingresos/Index');
 })->middleware(['auth'])->name('ingresos.index');
+
+Route::prefix('clientes')->middleware(['auth'])->group(function () {
+    Route::get('/', [App\Http\Controllers\Clients\ClientController::class, 'index'])
+        ->name('clientes.index');
+    Route::post('/', [App\Http\Controllers\Clients\ClientController::class, 'store'])
+        ->name('clientes.store');
+});
+
+Route::prefix('api')->group(function () {
+    Route::get('/clientes/catalogos', [App\Http\Controllers\Clients\ClientApiController::class, 'catalogos'])
+        ->name('api.clientes.catalogos');
+    Route::get('/estados/{pais}', [App\Http\Controllers\Clients\ClientApiController::class, 'estados'])
+        ->name('api.estados');
+    Route::get('/ciudades/{estado}', [App\Http\Controllers\Clients\ClientApiController::class, 'ciudades'])
+        ->name('api.ciudades');
+    Route::get('/subtipos', [App\Http\Controllers\Clients\ClientApiController::class, 'subtipos'])
+        ->name('api.subtipos');
+});
