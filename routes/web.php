@@ -30,6 +30,10 @@ Route::get('/ingresos', function () {
     return inertia('Ingresos/Index');
 })->middleware(['auth'])->name('ingresos.index');
 
+Route::get('/ui-kit', function () {
+    return inertia('DesignSystem/Index');
+})->name('ui-kit');
+
 Route::prefix('clientes')->middleware(['auth'])->group(function () {
     Route::get('/', [App\Http\Controllers\Clients\ClientController::class, 'index'])
         ->name('clientes.index');
