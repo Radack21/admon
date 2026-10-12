@@ -6,6 +6,7 @@ export default function Input({
     value,
     onChange,
     type = "text",
+    placeholder = " ",
     className = "",
     ...rest
 }) {
@@ -17,7 +18,7 @@ export default function Input({
                 type={type}
                 value={value}
                 onChange={onChange}
-                placeholder=" "
+                placeholder={placeholder}
                 className={`input-pill ${icon ? "has-icon-left" : ""} ${hasValue ? "has-value" : ""} ${invalid ? "invalid" : ""}`}
                 {...rest}
             />
