@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-const FIELDS = [
-    { key: "fecha", label: "Fecha (Emisión)" },
+const DEFAULT_FIELDS = [
+    { key: "fecha", label: "Fecha" },
     { key: "estatus", label: "Estatus" },
     { key: "monto", label: "Monto" },
     { key: "folio", label: "Folio" },
@@ -26,7 +26,7 @@ const ICON_FILE = (
     </svg>
 );
 
-function DateField({ id, label }) {
+function DateField({ label }) {
     return (
         <div className="floating-field has-icon-left">
             <input type="text" className="input-pill has-icon-left" placeholder="--/--/----" maxLength={10} autoComplete="off" />
@@ -38,11 +38,20 @@ function DateField({ id, label }) {
 
 export default function TableToolbar({
     searchPlaceholder = "Buscar...",
+    searchValue,
+    onSearch,
+    filterFields = DEFAULT_FIELDS,
+    estatusOptions = ["Cobrado", "Pendiente", "Vencido"],
+    showFilter = true,
     onAdd,
     onProgress,
+    onExport,
     className = "",
 }) {
-    const [search, setSearch] = useState("");
+    const controlled = onSearch !== undefined;
+    const [internalSearch, setInternalSearch] = useState("");
+    const search = controlled ? searchValue ?? "" : internalSearch;
+
     const [filterOpen, setFilterOpen] = useState(false);
     const [openSub, setOpenSub] = useState(null);
     const [poptrayOpen, setPoptrayOpen] = useState(false);
@@ -60,6 +69,68 @@ export default function TableToolbar({
 
     const hasValue = search.length > 0;
 
+    const updateSearch = (v) => {
+        if (controlled) onSearch(v);
+        else setInternalSearch(v);
+    };
+
+    const renderSubmenu = (field) => {
+        if (field.key === "fecha") {
+            return (
+                <div className="flex flex-col gap-2.5">
+                    <div className="date-mode-switch" role="radiogroup" aria-label="Tipo de filtro de fecha">
+                        <label className="date-mode-option">
+                            <input type="radio" name="tb_fecha_modo" checked={dateMode === "single"} onChange={() => setDateMode("single")} />
+                            <span>Una fecha</span>
+                        </label>
+                        <label className="date-mode-option">
+                            <input type="radio" name="tb_fecha_modo" checked={dateMode === "period"} onChange={() => setDateMode("period")} />
+                            <span>Periodo</span>
+                        </label>
+                    </div>
+                    <div className={`date-fields ${dateMode}`}>
+                        <div className="sub-field date-single-field">
+                            <DateField label="Fecha" />
+                        </div>
+                        <div className="date-period-field">
+                            <div className="sub-field">
+                                <DateField label="Fecha inicial" />
+                            </div>
+                            <div className="sub-field">
+                                <DateField label="Fecha final" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        if (field.key === "estatus") {
+            return (
+                <>
+                    {estatusOptions.map((s) => (
+                        <label className="chk-row" key={s}>
+                            <span className="chk-box-wrap">
+                                <input type="checkbox" />
+                                <span className="chk-box">
+                                    <svg viewBox="0 0 24 24">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </span>
+                            </span>
+                            <span className="chk-text">{s}</span>
+                        </label>
+                    ))}
+                </>
+            );
+        }
+        return (
+            <div className="floating-field">
+                <input type="text" className="input-pill" placeholder=" " />
+                <label className="floating-label">Contiene...</label>
+            </div>
+        );
+    };
+
     return (
         <div className={`table-toolbar ${className}`}>
             <div className="toolbar-left">
@@ -68,7 +139,7 @@ export default function TableToolbar({
                         <button
                             type="button"
                             className="search-action-btn"
-                            onClick={() => hasValue && setSearch("")}
+                            onClick={() => hasValue && updateSearch("")}
                             aria-label="Limpiar búsqueda"
                             data-tooltip="Limpiar término"
                         >
@@ -85,141 +156,69 @@ export default function TableToolbar({
                             type="text"
                             className="search-pill"
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => updateSearch(e.target.value)}
                             autoComplete="off"
                         />
                         <label className="floating-label">{searchPlaceholder}</label>
                     </div>
                 </div>
 
-                <div className="filter-wrap">
-                    <button
-                        type="button"
-                        className={`btn-filter ${filterOpen ? "on" : ""}`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setFilterOpen((o) => !o);
-                        }}
-                        aria-label="Filtros"
-                        data-tooltip="Opciones de filtrado"
-                    >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                        </svg>
-                        <span className="count" style={{ display: "none" }} />
-                    </button>
-                    <div className={`filter-menu ${filterOpen ? "active" : ""}`} onClick={(e) => e.stopPropagation()}>
-                        <div className="filter-menu-head">
-                            <div className="menu-label">Filtros</div>
-                            <button className="btn-apply-sm" type="button">
-                                Aplicar
-                            </button>
-                        </div>
-                        <div className="field-list">
-                            {FIELDS.map((f) => (
-                                <div
-                                    key={f.key}
-                                    className={`field-row ${openSub === f.key ? "row-open" : ""}`}
-                                    onClick={() => setOpenSub((s) => (s === f.key ? null : f.key))}
-                                >
-                                    <span className="fname">
-                                        <span className="dot" />
-                                        {f.label}
-                                    </span>
-                                    <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <polyline points="9 18 15 12 9 6" />
-                                    </svg>
-                                </div>
-                            ))}
-                            <div className="no-match" style={{ display: "none" }}>
-                                Sin coincidencias.
+                {showFilter && (
+                    <div className="filter-wrap">
+                        <button
+                            type="button"
+                            className={`btn-filter ${filterOpen ? "on" : ""}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setFilterOpen((o) => !o);
+                            }}
+                            aria-label="Filtros"
+                            data-tooltip="Opciones de filtrado"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                            </svg>
+                            <span className="count" style={{ display: "none" }} />
+                        </button>
+                        <div className={`filter-menu ${filterOpen ? "active" : ""}`} onClick={(e) => e.stopPropagation()}>
+                            <div className="filter-menu-head">
+                                <div className="menu-label">Filtros</div>
+                                <button className="btn-apply-sm" type="button">
+                                    Aplicar
+                                </button>
                             </div>
-                        </div>
-                        <div className="menu-foot">
-                            <button className="link-clear" type="button">
-                                Limpiar todo
-                            </button>
-                        </div>
-
-                        <div className={`field-submenu ${openSub === "fecha" ? "active" : ""}`}>
-                            <div className="sub-title">Fecha</div>
-                            <div className="date-mode-switch" role="radiogroup" aria-label="Tipo de filtro de fecha">
-                                <label className="date-mode-option">
-                                    <input type="radio" name="tb_fecha_modo" checked={dateMode === "single"} onChange={() => setDateMode("single")} />
-                                    <span>Una fecha</span>
-                                </label>
-                                <label className="date-mode-option">
-                                    <input type="radio" name="tb_fecha_modo" checked={dateMode === "period"} onChange={() => setDateMode("period")} />
-                                    <span>Periodo</span>
-                                </label>
-                            </div>
-                            <div className={`date-fields ${dateMode}`}>
-                                <div className="sub-field date-single-field">
-                                    <DateField id="tb_fecha_especifica" label="Fecha" />
-                                </div>
-                                <div className="date-period-field">
-                                    <div className="sub-field">
-                                        <DateField id="tb_fecha_inicio" label="Fecha inicial" />
-                                    </div>
-                                    <div className="sub-field">
-                                        <DateField id="tb_fecha_fin" label="Fecha final" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={`field-submenu ${openSub === "estatus" ? "active" : ""}`}>
-                            <div className="sub-title">Estatus</div>
-                            {["Cobrado", "Pendiente", "Vencido"].map((s) => (
-                                <label className="chk-row" key={s}>
-                                    <span className="chk-box-wrap">
-                                        <input type="checkbox" />
-                                        <span className="chk-box">
-                                            <svg viewBox="0 0 24 24">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
+                            <div className="field-list">
+                                {filterFields.map((f) => (
+                                    <div
+                                        key={f.key}
+                                        className={`field-row ${openSub === f.key ? "row-open" : ""}`}
+                                        onClick={() => setOpenSub((s) => (s === f.key ? null : f.key))}
+                                    >
+                                        <span className="fname">
+                                            <span className="dot" />
+                                            {f.label}
                                         </span>
-                                    </span>
-                                    <span className="chk-text">{s}</span>
-                                </label>
+                                        <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <polyline points="9 18 15 12 9 6" />
+                                        </svg>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="menu-foot">
+                                <button className="link-clear" type="button">
+                                    Limpiar todo
+                                </button>
+                            </div>
+
+                            {filterFields.map((f) => (
+                                <div className={`field-submenu ${openSub === f.key ? "active" : ""}`} key={f.key}>
+                                    <div className="sub-title">{f.label}</div>
+                                    {renderSubmenu(f)}
+                                </div>
                             ))}
-                        </div>
-
-                        <div className={`field-submenu ${openSub === "monto" ? "active" : ""}`}>
-                            <div className="sub-title">Monto</div>
-                            <div className="sub-range">
-                                <div className="sub-field">
-                                    <div className="floating-field">
-                                        <input type="number" className="input-pill" placeholder=" " step="any" />
-                                        <label className="floating-label">Monto mínimo</label>
-                                    </div>
-                                </div>
-                                <div className="sub-field">
-                                    <div className="floating-field">
-                                        <input type="number" className="input-pill" placeholder=" " step="any" />
-                                        <label className="floating-label">Monto máximo</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={`field-submenu ${openSub === "folio" ? "active" : ""}`}>
-                            <div className="sub-title">Folio</div>
-                            <div className="floating-field">
-                                <input type="text" className="input-pill" placeholder=" " />
-                                <label className="floating-label">Contiene...</label>
-                            </div>
-                        </div>
-
-                        <div className={`field-submenu ${openSub === "cliente" ? "active" : ""}`}>
-                            <div className="sub-title">Cliente</div>
-                            <div className="floating-field">
-                                <input type="text" className="input-pill" placeholder=" " />
-                                <label className="floating-label">Contiene...</label>
-                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
 
             <div className="toolbar-right">
@@ -255,11 +254,11 @@ export default function TableToolbar({
                         </svg>
                     </button>
                     <div className="poptray-menu" onClick={(e) => e.stopPropagation()}>
-                        <div className="poptray-item excel">
+                        <div className="poptray-item excel" onClick={() => onExport?.("excel")}>
                             {ICON_FILE}
                             <span>Archivo de Excel</span>
                         </div>
-                        <div className="poptray-item pdf">
+                        <div className="poptray-item pdf" onClick={() => onExport?.("pdf")}>
                             {ICON_FILE}
                             <span>Documento PDF</span>
                         </div>

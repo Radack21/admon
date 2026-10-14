@@ -1,20 +1,39 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "@inertiajs/react";
-import { X } from "lucide-react";
-import Section from "@/Components/ui/Section";
-import SelectSearchable from "@/Components/ui/SelectSearchable";
-import MultiSelect from "@/Components/ui/MultiSelect";
 import axios from "axios";
+import Tabs from "@/Components/ui/Tabs";
+import Input from "@/Components/ui/Input";
+import Select from "@/Components/ui/Select";
+import MultiSelect from "@/Components/ui/MultiSelect";
+import PhoneInput from "@/Components/ui/PhoneInput";
+import SavingOverlay from "@/Components/ui/SavingOverlay";
 
-export default function CreateClientModal({ onClose, type = "directorio" }) {
-    const isPotencial = type === "potenciales";
+const SUCURSALES = [
+    { value: "León", label: "León" },
+    { value: "Guanajuato", label: "Guanajuato" },
+];
+
+const SOCIAL = [
+    { key: "web", label: "Página web", placeholder: "https://..." },
+    { key: "facebook", label: "Facebook", placeholder: "" },
+    { key: "twitter", label: "Twitter", placeholder: "" },
+    { key: "linkedin", label: "LinkedIn", placeholder: "" },
+    { key: "google", label: "Google+", placeholder: "" },
+];
+
+const opts = (list) => (list || []).map((o) => ({ value: o.id, label: o.nombre }));
+
+export default function CreateClientModal({ onClose, type = "directorio", client = null }) {
+    const isEdit = Boolean(client?.id);
+    const clientType = client?.type || (type === "potenciales" ? "prospect" : "active");
+    const isPotencial = clientType === "prospect";
     const [catalogos, setCatalogos] = useState(null);
     const [estados, setEstados] = useState([]);
     const [ciudades, setCiudades] = useState([]);
     const [subtipos, setSubtipos] = useState([]);
-    const [openSections, setOpenSections] = useState(new Set());
+    const [tab, setTab] = useState("generales");
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, put, processing, errors } = useForm({
         nombre_comercial: "",
         razon_social: "",
         rfc: "",
@@ -51,351 +70,399 @@ export default function CreateClientModal({ onClose, type = "directorio" }) {
         contacto_extension: "",
         social_networks: { web: "", facebook: "", twitter: "", linkedin: "", google: "" },
         services: [],
-        type: isPotencial ? "prospect" : "active",
+        type: clientType,
     });
 
-    const toggleSection = (title) => {
-        setOpenSections((prev) => {
-            const next = new Set(prev);
-            if (next.has(title)) next.delete(title);
-            else next.add(title);
-            return next;
-        });
+    const set = (key, value) => setData((prev) => ({ ...prev, [key]: value }));
+
+    const setSocial = (platform, value) =>
+        setData((prev) => ({ ...prev, social_networks: { ...prev.social_networks, [platform]: value } }));
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const { data: cats } = await axios.get(route("api.clientes.catalogos"));
+                setCatalogos(cats);
+            } catch (e) {
+                console.error("Error loading catalogs", e);
+            }
+        })();
+    }, []);
+
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key === "Escape" && !processing) onClose();
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [processing, onClose]);
+
+    const fetchEstados = async (paisId) => {
+        if (!paisId) {
+            setEstados([]);
+            return;
+        }
+        try {
+            const { data: res } = await axios.get(route("api.estados", paisId));
+            setEstados(res);
+        } catch {
+            setEstados([]);
+        }
     };
 
-    const loadCatalogos = async () => {
-        if (catalogos) return;
+    const fetchCiudades = async (estadoId) => {
+        if (!estadoId) {
+            setCiudades([]);
+            return;
+        }
         try {
-            const { data: cats } = await axios.get(route("api.clientes.catalogos"));
-            setCatalogos(cats);
-        } catch (e) {
-            console.error("Error loading catalogs", e);
+            const { data: res } = await axios.get(route("api.ciudades", estadoId));
+            setCiudades(res);
+        } catch {
+            setCiudades([]);
+        }
+    };
+
+    const fetchSubtipos = async (usoCfdiId) => {
+        if (!usoCfdiId) {
+            setSubtipos([]);
+            return;
+        }
+        try {
+            const { data: res } = await axios.get(route("api.subtipos", { uso_cfdi_id: usoCfdiId }));
+            setSubtipos(res);
+        } catch {
+            setSubtipos([]);
         }
     };
 
     const loadEstados = async (paisId) => {
         setData((d) => ({ ...d, pais_id: paisId, estado_id: "", ciudad_id: "" }));
-        if (!paisId) { setEstados([]); setCiudades([]); return; }
-        try {
-            const { data } = await axios.get(route("api.estados", paisId));
-            setEstados(data);
-        } catch (e) { setEstados([]); }
+        setCiudades([]);
+        await fetchEstados(paisId);
     };
 
     const loadCiudades = async (estadoId) => {
         setData((d) => ({ ...d, estado_id: estadoId, ciudad_id: "" }));
-        if (!estadoId) { setCiudades([]); return; }
-        try {
-            const { data } = await axios.get(route("api.ciudades", estadoId));
-            setCiudades(data);
-        } catch (e) { setCiudades([]); }
+        await fetchCiudades(estadoId);
     };
 
     const loadSubtipos = async (usoCfdiId) => {
         setData((d) => ({ ...d, uso_cfdi_id: usoCfdiId, subtipo_cliente_id: "" }));
-        if (!usoCfdiId) { setSubtipos([]); return; }
-        try {
-            const { data } = await axios.get(route("api.subtipos", { uso_cfdi_id: usoCfdiId }));
-            setSubtipos(data);
-        } catch (e) { setSubtipos([]); }
+        await fetchSubtipos(usoCfdiId);
     };
 
-    useEffect(() => { loadCatalogos(); }, []);
+    useEffect(() => {
+        if (!isEdit) return;
+        (async () => {
+            try {
+                const { data: c } = await axios.get(route("api.clientes.show", client.id));
+                const networks = Object.fromEntries(
+                    (c.social_networks || []).map((n) => [n.platform, n.url])
+                );
+                setData((prev) => ({
+                    ...prev,
+                    nombre_comercial: c.nombre_comercial ?? "",
+                    razon_social: c.razon_social ?? "",
+                    rfc: c.rfc ?? "",
+                    curp: c.curp ?? "",
+                    representante_legal: c.representante_legal ?? "",
+                    responsable_id: c.responsable_id ?? "",
+                    sucursal: c.sucursal ?? "",
+                    fuente: c.fuente ?? "",
+                    persona_tipo_id: c.persona_tipo_id ?? "",
+                    uso_cfdi_id: c.uso_cfdi_id ?? "",
+                    subtipo_cliente_id: c.subtipo_cliente_id ?? "",
+                    regimen_fiscal_id: c.regimen_fiscal_id ?? "",
+                    forma_juridica_id: c.forma_juridica_id ?? "",
+                    ambito_id: c.ambito_id ?? "",
+                    tamanio_id: c.tamanio_id ?? "",
+                    sector_id: c.sector_id ?? "",
+                    clasificacion_id: c.clasificacion_id ?? "",
+                    rama_id: c.rama_id ?? "",
+                    domicilio_calle: c.domicilio_calle ?? "",
+                    domicilio_numero: c.domicilio_numero ?? "",
+                    domicilio_colonia: c.domicilio_colonia ?? "",
+                    domicilio_cp: c.domicilio_cp ?? "",
+                    pais_id: c.pais_id ?? "",
+                    estado_id: c.estado_id ?? "",
+                    ciudad_id: c.ciudad_id ?? "",
+                    lada: c.lada ?? "",
+                    telefono: c.telefono ?? "",
+                    contacto_nombre: c.contacto_nombre ?? "",
+                    contacto_profesion: c.contacto_profesion ?? "",
+                    contacto_puesto: c.contacto_puesto ?? "",
+                    contacto_email: c.contacto_email ?? "",
+                    contacto_lada: c.contacto_lada ?? "",
+                    contacto_telefono: c.contacto_telefono ?? "",
+                    contacto_extension: c.contacto_extension ?? "",
+                    social_networks: { ...prev.social_networks, ...networks },
+                    services: (c.services || []).map((s) => s.id),
+                    type: c.type,
+                }));
+
+                await Promise.all([
+                    fetchEstados(c.pais_id),
+                    fetchCiudades(c.estado_id),
+                    fetchSubtipos(c.uso_cfdi_id),
+                ]);
+            } catch (e) {
+                console.error("Error loading client", e);
+            }
+        })();
+    }, [isEdit, client?.id]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route("clientes.store"), {
-            onSuccess: () => onClose(),
-            preserveScroll: true,
-        });
+        const options = { onSuccess: () => onClose(), preserveScroll: true };
+        if (isEdit) {
+            put(route("clientes.update", client.id), options);
+        } else {
+            post(route("clientes.store"), options);
+        }
     };
 
-    const set = (key, value) => {
-        setData((prev) => ({ ...prev, [key]: value }));
-    };
-
-    const setSocial = (platform, value) => {
-        setData((prev) => ({
-            ...prev,
-            social_networks: { ...prev.social_networks, [platform]: value },
-        }));
-    };
-
-    const personas = catalogos?.persona_tipos || [];
-    const usosCfdi = catalogos?.uso_cfdi || [];
-    const regimenes = catalogos?.regimenes_fiscales || [];
-    const formas = catalogos?.formas_juridicas || [];
-    const ambitos = catalogos?.ambitos || [];
-    const tamanios = catalogos?.tamanios || [];
-    const sectores = catalogos?.sectores || [];
-    const clasificaciones = catalogos?.clasificaciones || [];
-    const ramas = catalogos?.ramas || [];
-    const paises = catalogos?.paises || [];
-    const usuarios = catalogos?.usuarios?.map((u) => ({ id: u.id, nombre: `${u.nombre} ${u.apellido_paterno}` })) || [];
-    const servicios = catalogos?.servicios || [];
-
-    const sections = [
-        { key: "generales", title: "Datos Generales", alwaysOpen: true },
-        { key: "clasificacion", title: "Clasificación Fiscal" },
-        { key: "direccion", title: "Dirección" },
-        { key: "contacto", title: "Contacto Principal", alwaysOpen: true },
-        { key: "telefonos", title: "Teléfonos del Cliente" },
-        { key: "redes", title: "Redes Sociales" },
-        ...(!isPotencial ? [{ key: "servicios", title: "Servicios" }] : []),
-    ];
-
-    const filledSections = useMemo(() => {
-        let count = 0;
-        if (data.nombre_comercial) count++;
-        if (data.regimen_fiscal_id) count++;
-        if (data.domicilio_calle || data.pais_id) count++;
-        if (data.contacto_nombre || data.contacto_email) count++;
-        if (data.telefono) count++;
-        if (data.social_networks?.web || data.social_networks?.facebook) count++;
-        if (data.services?.length > 0) count++;
-        return count;
-    }, [data]);
-
-    const progressPct = Math.round((filledSections / sections.length) * 100);
+    const usuarios = (catalogos?.usuarios || []).map((u) => ({
+        value: u.id,
+        label: `${u.nombre} ${u.apellido_paterno}`,
+    }));
 
     return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-2xl max-h-[85vh] overflow-hidden flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-900">
-                            {isPotencial ? "Nuevo Potencial" : "Nuevo Cliente"}
+        <div className="modal-overlay active">
+            <div className="modal-card">
+                <div className="modal-header">
+                    <div className="modal-header-top">
+                        <h2>
+                            {isEdit ? "Editar" : "Nuevo"} {isPotencial ? "Potencial" : "Cliente"}
                         </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                            <div className="h-1.5 w-48 bg-gray-200 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all duration-500"
-                                    style={{ width: `${progressPct}%` }}
-                                />
-                            </div>
-                            <span className="text-xs text-gray-400">
-                                {filledSections}/{sections.length} secciones
-                            </span>
-                        </div>
+                        <button
+                            type="button"
+                            className="icon-btn delete-btn"
+                            onClick={onClose}
+                            aria-label="Cerrar formulario"
+                            data-tooltip="Cerrar ventana"
+                            data-tooltip-align="left"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                    <Tabs
+                        variant="underline"
+                        value={tab}
+                        onChange={setTab}
+                        tabs={[
+                            { label: "Datos Generales", value: "generales" },
+                            { label: "Configuración Operativa", value: "operativa" },
+                        ]}
+                    />
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-                    {/* Sección 1: Datos Generales */}
-                    <Section title="Datos Generales" defaultOpen={true}>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nombre comercial<span className="text-red-500 ml-0.5">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.nombre_comercial}
-                                    onChange={(e) => set("nombre_comercial", e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                    required
-                                />
-                                {errors.nombre_comercial && <p className="mt-1 text-xs text-red-600">{errors.nombre_comercial}</p>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Razón social</label>
-                                <input type="text" value={data.razon_social} onChange={(e) => set("razon_social", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">RFC</label>
-                                <input type="text" value={data.rfc} onChange={(e) => set("rfc", e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" maxLength={13} />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">CURP</label>
-                                <input type="text" value={data.curp} onChange={(e) => set("curp", e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" maxLength={18} />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Representante legal</label>
-                                <input type="text" value={data.representante_legal} onChange={(e) => set("representante_legal", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <SelectSearchable label="Responsable" name="responsable_id" options={usuarios} value={data.responsable_id} onChange={(v) => set("responsable_id", v)} placeholder="Seleccionar usuario..." />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Sucursal</label>
-                                <select value={data.sucursal} onChange={(e) => set("sucursal", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                                    <option value="">Seleccionar...</option>
-                                    <option value="León">León</option>
-                                    <option value="Guanajuato">Guanajuato</option>
-                                </select>
-                            </div>
-                            {isPotencial && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Fuente</label>
-                                    <input type="text" value={data.fuente} onChange={(e) => set("fuente", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
+                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+                    <div className="modal-body">
+                        {tab === "generales" ? (
+                            <>
+                                <div className="form-section">
+                                    <div className="section-header">Identificación</div>
+                                    <div className="form-grid">
+                                        <div className="col-span-6">
+                                            <Input label="Nombre comercial" required value={data.nombre_comercial} onChange={(e) => set("nombre_comercial", e.target.value)} invalid={!!errors.nombre_comercial} />
+                                            {errors.nombre_comercial && <p className="error-text">{errors.nombre_comercial}</p>}
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Input label="Razón social" value={data.razon_social} onChange={(e) => set("razon_social", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Input label="RFC" value={data.rfc} onChange={(e) => set("rfc", e.target.value.toUpperCase())} maxLength={13} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Input label="CURP" value={data.curp} onChange={(e) => set("curp", e.target.value.toUpperCase())} maxLength={18} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Input label="Representante legal" value={data.representante_legal} onChange={(e) => set("representante_legal", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Responsable" searchable options={usuarios} value={data.responsable_id} onChange={(v) => set("responsable_id", v)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Sucursal" options={SUCURSALES} value={data.sucursal} onChange={(v) => set("sucursal", v)} />
+                                        </div>
+                                        {isPotencial && (
+                                            <div className="col-span-4">
+                                                <Input label="Fuente" value={data.fuente} onChange={(e) => set("fuente", e.target.value)} />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    </Section>
 
-                    {/* Sección 2: Clasificación Fiscal */}
-                    <Section title="Clasificación Fiscal">
-                        <div className="grid grid-cols-3 gap-4">
-                            <SelectSearchable label="Tipo de persona" name="persona_tipo_id" options={personas} value={data.persona_tipo_id} onChange={(v) => set("persona_tipo_id", v)} />
-                            <SelectSearchable label="Uso CFDI" name="uso_cfdi_id" options={usosCfdi} value={data.uso_cfdi_id} onChange={(v) => loadSubtipos(v)} />
-                            <SelectSearchable label="Subtipo" name="subtipo_cliente_id" options={subtipos} value={data.subtipo_cliente_id} onChange={(v) => set("subtipo_cliente_id", v)} />
-                            <SelectSearchable label="Régimen fiscal" name="regimen_fiscal_id" options={regimenes} value={data.regimen_fiscal_id} onChange={(v) => set("regimen_fiscal_id", v)} />
-                            <SelectSearchable label="Forma jurídica" name="forma_juridica_id" options={formas} value={data.forma_juridica_id} onChange={(v) => set("forma_juridica_id", v)} />
-                            <SelectSearchable label="Ámbito" name="ambito_id" options={ambitos} value={data.ambito_id} onChange={(v) => set("ambito_id", v)} />
-                            <SelectSearchable label="Tamaño" name="tamanio_id" options={tamanios} value={data.tamanio_id} onChange={(v) => set("tamanio_id", v)} />
-                            <SelectSearchable label="Sector" name="sector_id" options={sectores} value={data.sector_id} onChange={(v) => set("sector_id", v)} />
-                            <SelectSearchable label="Clasificación" name="clasificacion_id" options={clasificaciones} value={data.clasificacion_id} onChange={(v) => set("clasificacion_id", v)} />
-                            <SelectSearchable label="Rama" name="rama_id" options={ramas} value={data.rama_id} onChange={(v) => set("rama_id", v)} />
-                        </div>
-                    </Section>
+                                <div className="form-section">
+                                    <div className="section-header">Clasificación Fiscal</div>
+                                    <div className="form-grid">
+                                        <div className="col-span-4">
+                                            <Select label="Tipo de persona" options={opts(catalogos?.persona_tipos)} value={data.persona_tipo_id} onChange={(v) => set("persona_tipo_id", v)} searchable />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Uso CFDI" options={opts(catalogos?.uso_cfdi)} value={data.uso_cfdi_id} onChange={loadSubtipos} searchable />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Subtipo" options={opts(subtipos)} value={data.subtipo_cliente_id} onChange={(v) => set("subtipo_cliente_id", v)} searchable />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Régimen fiscal" options={opts(catalogos?.regimenes_fiscales)} value={data.regimen_fiscal_id} onChange={(v) => set("regimen_fiscal_id", v)} searchable />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Forma jurídica" options={opts(catalogos?.formas_juridicas)} value={data.forma_juridica_id} onChange={(v) => set("forma_juridica_id", v)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Ámbito" options={opts(catalogos?.ambitos)} value={data.ambito_id} onChange={(v) => set("ambito_id", v)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Tamaño" options={opts(catalogos?.tamanios)} value={data.tamanio_id} onChange={(v) => set("tamanio_id", v)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Sector" options={opts(catalogos?.sectores)} value={data.sector_id} onChange={(v) => set("sector_id", v)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Clasificación" options={opts(catalogos?.clasificaciones)} value={data.clasificacion_id} onChange={(v) => set("clasificacion_id", v)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Rama" options={opts(catalogos?.ramas)} value={data.rama_id} onChange={(v) => set("rama_id", v)} />
+                                        </div>
+                                    </div>
+                                </div>
 
-                    {/* Sección 3: Dirección */}
-                    <Section title="Dirección">
-                        <div className="grid grid-cols-4 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Calle</label>
-                                <input type="text" value={data.domicilio_calle} onChange={(e) => set("domicilio_calle", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">No.</label>
-                                <input type="text" value={data.domicilio_numero} onChange={(e) => set("domicilio_numero", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Colonia</label>
-                                <input type="text" value={data.domicilio_colonia} onChange={(e) => set("domicilio_colonia", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">CP</label>
-                                <input type="text" value={data.domicilio_cp} onChange={(e) => set("domicilio_cp", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" maxLength={10} />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4 mt-4">
-                            <SelectSearchable label="País" name="pais_id" options={paises} value={data.pais_id} onChange={(v) => loadEstados(v)} />
-                            <SelectSearchable label="Estado" name="estado_id" options={estados} value={data.estado_id} onChange={(v) => loadCiudades(v)} />
-                            <SelectSearchable label="Ciudad" name="ciudad_id" options={ciudades} value={data.ciudad_id} onChange={(v) => set("ciudad_id", v)} />
-                        </div>
-                    </Section>
+                                <div className="form-section">
+                                    <div className="section-header">Dirección</div>
+                                    <div className="form-grid">
+                                        <div className="col-span-6">
+                                            <Input label="Calle" value={data.domicilio_calle} onChange={(e) => set("domicilio_calle", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Input label="Número" value={data.domicilio_numero} onChange={(e) => set("domicilio_numero", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Input label="Colonia" value={data.domicilio_colonia} onChange={(e) => set("domicilio_colonia", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Input label="Código postal" value={data.domicilio_cp} onChange={(e) => set("domicilio_cp", e.target.value)} maxLength={10} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="País" options={opts(catalogos?.paises)} value={data.pais_id} onChange={loadEstados} searchable />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Estado" options={opts(estados)} value={data.estado_id} onChange={loadCiudades} searchable />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Select label="Ciudad" options={opts(ciudades)} value={data.ciudad_id} onChange={(v) => set("ciudad_id", v)} searchable />
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="form-section">
+                                    <div className="section-header">Contacto Principal</div>
+                                    <div className="form-grid">
+                                        <div className="col-span-6">
+                                            <Input label="Nombre" value={data.contacto_nombre} onChange={(e) => set("contacto_nombre", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Input label="Profesión" value={data.contacto_profesion} onChange={(e) => set("contacto_profesion", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Input label="Cargo / Puesto" value={data.contacto_puesto} onChange={(e) => set("contacto_puesto", e.target.value)} />
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Input
+                                                label="Correo electrónico"
+                                                type="email"
+                                                placeholder="nombre@ejemplo.com"
+                                                value={data.contacto_email}
+                                                onChange={(e) => set("contacto_email", e.target.value)}
+                                                invalid={!!errors.contacto_email}
+                                                icon={
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                        <polyline points="22,6 12,13 2,6" />
+                                                    </svg>
+                                                }
+                                            />
+                                            {errors.contacto_email && <p className="error-text">{errors.contacto_email}</p>}
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Input label="Lada" value={data.contacto_lada} onChange={(e) => set("contacto_lada", e.target.value)} maxLength={20} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <PhoneInput label="Teléfono" value={data.contacto_telefono} onChange={(v) => set("contacto_telefono", v)} />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Input label="Extensión" value={data.contacto_extension} onChange={(e) => set("contacto_extension", e.target.value)} maxLength={10} />
+                                        </div>
+                                    </div>
+                                </div>
 
-                    {/* Sección 4: Contacto Principal */}
-                    <Section title="Contacto Principal" defaultOpen={true}>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                <input type="text" value={data.contacto_nombre} onChange={(e) => set("contacto_nombre", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Profesión</label>
-                                <input type="text" value={data.contacto_profesion} onChange={(e) => set("contacto_profesion", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Cargo / Puesto</label>
-                                <input type="text" value={data.contacto_puesto} onChange={(e) => set("contacto_puesto", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" value={data.contacto_email} onChange={(e) => set("contacto_email", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                                {errors.contacto_email && <p className="mt-1 text-xs text-red-600">{errors.contacto_email}</p>}
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Lada</label>
-                                <input type="text" value={data.contacto_lada} onChange={(e) => set("contacto_lada", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                <input type="tel" value={data.contacto_telefono} onChange={(e) => set("contacto_telefono", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Ext</label>
-                                <input type="text" value={data.contacto_extension} onChange={(e) => set("contacto_extension", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                        </div>
-                    </Section>
+                                <div className="form-section">
+                                    <div className="section-header">Teléfonos del Cliente</div>
+                                    <div className="form-grid">
+                                        <div className="col-span-4">
+                                            <Input label="Lada" value={data.lada} onChange={(e) => set("lada", e.target.value)} maxLength={5} />
+                                        </div>
+                                        <div className="col-span-8">
+                                            <PhoneInput label="Teléfono" value={data.telefono} onChange={(v) => set("telefono", v)} />
+                                        </div>
+                                    </div>
+                                </div>
 
-                    {/* Sección 5: Teléfonos */}
-                    <Section title="Teléfonos del Cliente">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Lada</label>
-                                <input type="text" value={data.lada} onChange={(e) => set("lada", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                <input type="tel" value={data.telefono} onChange={(e) => set("telefono", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                        </div>
-                    </Section>
+                                <div className="form-section">
+                                    <div className="section-header">Redes Sociales</div>
+                                    <div className="form-grid">
+                                        {SOCIAL.map((s) => (
+                                            <div className="col-span-6" key={s.key}>
+                                                <Input
+                                                    label={s.label}
+                                                    type="url"
+                                                    placeholder={s.placeholder}
+                                                    value={data.social_networks[s.key]}
+                                                    onChange={(e) => setSocial(s.key, e.target.value)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
 
-                    {/* Sección 6: Redes Sociales */}
-                    <Section title="Redes Sociales">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Página web</label>
-                                <input type="url" value={data.social_networks.web} onChange={(e) => setSocial("web", e.target.value)} placeholder="https://..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
-                                <input type="url" value={data.social_networks.facebook} onChange={(e) => setSocial("facebook", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
-                                <input type="url" value={data.social_networks.twitter} onChange={(e) => setSocial("twitter", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-                                <input type="url" value={data.social_networks.linkedin} onChange={(e) => setSocial("linkedin", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Google+</label>
-                                <input type="url" value={data.social_networks.google} onChange={(e) => setSocial("google", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
-                            </div>
-                        </div>
-                    </Section>
+                                {!isPotencial && (
+                                    <div className="form-section">
+                                        <div className="section-header">Servicios</div>
+                                        <div className="form-grid">
+                                            <div className="col-span-12">
+                                                <MultiSelect
+                                                    label="Servicios ofrecidos"
+                                                    options={opts(catalogos?.servicios)}
+                                                    value={data.services}
+                                                    onChange={(v) => set("services", v)}
+                                                />
+                                                {errors.services && <p className="error-text">{errors.services}</p>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
 
-                    {/* Sección 7: Servicios */}
-                    {!isPotencial && (
-                        <Section title="Servicios">
-                            <MultiSelect
-                                label="Servicios ofrecidos"
-                                name="services"
-                                options={servicios}
-                                value={data.services}
-                                onChange={(v) => set("services", v)}
-                                placeholder="Seleccionar servicios..."
-                            />
-                            {errors.services && <p className="mt-1 text-xs text-red-600">{errors.services}</p>}
-                        </Section>
-                    )}
+                    <div className="modal-footer">
+                        <button type="button" className="btn-secondary" onClick={onClose}>
+                            Cancelar
+                        </button>
+                        <button type="submit" className="btn-primary" disabled={processing}>
+                            {isEdit ? "Actualizar" : "Guardar"}
+                        </button>
+                    </div>
                 </form>
 
-                {/* Footer */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 shrink-0">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={processing}
-                        className="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-[#b83030] rounded-md hover:from-orange-500 hover:to-red-500 transition-all disabled:opacity-50 shadow-sm"
-                    >
-                        {processing ? "Guardando..." : "Guardar"}
-                    </button>
-                </div>
+                <SavingOverlay show={processing} title="Guardando información..." description="Procesando cambios del cliente." />
             </div>
         </div>
     );

@@ -307,15 +307,17 @@ export default function DesignSystemIndex() {
                                 <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
                                     Subrayado
                                 </span>
-                                <Tabs
-                                    variant="underline"
-                                    value={tabUnderline}
-                                    onChange={setTabUnderline}
-                                    tabs={[
-                                        { label: "Datos Generales", value: "generales" },
-                                        { label: "Configuración Operativa", value: "operativa" },
-                                    ]}
-                                />
+                                <div style={{ borderBottom: "1px solid var(--border-color)" }}>
+                                    <Tabs
+                                        variant="underline"
+                                        value={tabUnderline}
+                                        onChange={setTabUnderline}
+                                        tabs={[
+                                            { label: "Datos Generales", value: "generales" },
+                                            { label: "Configuración Operativa", value: "operativa" },
+                                        ]}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </Card>

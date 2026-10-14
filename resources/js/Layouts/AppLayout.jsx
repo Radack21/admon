@@ -2,13 +2,24 @@ import AnimatedHeader from "@/Components/header/AnimatedHeader";
 import RightSidebar from "@/Components/sidebar/RightSidebar";
 import StatusBar from "@/Components/status/StatusBar";
 import PageTransition from "@/Components/ui/PageTransition";
+import { useThemeContext } from "@/Components/ui/ThemeProvider";
 
 export default function AppLayout({ breadcrumb, children }) {
+    const { theme } = useThemeContext();
+    const isDark = theme === "dark";
+
     return (
-        <div className="flex flex-col min-h-dvh overflow-x-hidden">
+        <div
+            className="flex flex-col min-h-dvh overflow-x-hidden"
+            style={{ backgroundColor: isDark ? "transparent" : "var(--bg-app)" }}
+        >
             {/* Fondo compartido */}
-            <div className="bg-canvas" />
-            <div className="grain" />
+            {isDark && (
+                <>
+                    <div className="bg-canvas" />
+                    <div className="grain" />
+                </>
+            )}
 
             <AnimatedHeader breadcrumb={breadcrumb} />
             <RightSidebar />

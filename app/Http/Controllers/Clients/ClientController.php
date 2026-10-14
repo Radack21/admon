@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Clients;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clients\StoreClientRequest;
+use App\Http\Requests\Clients\UpdateClientRequest;
 use App\Models\Client;
-use App\Models\ClientSocialNetwork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -62,23 +62,12 @@ class ClientController extends Controller
             ->except(['social_networks', 'services'])
             ->toArray();
 
-        $clientData['folio'] = 'CLI-' . strtoupper(Str::random(8));
+        $clientData['folio'] = 'CLI-'.strtoupper(Str::random(8));
         $clientData['fecha_registro'] = now()->toDateString();
 
         $client = Client::create($clientData);
 
-        if ($request->has('social_networks')) {
-            $platforms = ['web', 'facebook', 'twitter', 'linkedin', 'google'];
-            foreach ($platforms as $platform) {
-                $url = $request->input("social_networks.{$platform}");
-                if (! empty($url)) {
-                    $client->socialNetworks()->create([
-                        'platform' => $platform,
-                        'url' => $url,
-                    ]);
-                }
-            }
-        }
+        $this->syncSocialNetworks($client, $request->input('social_networks', []));
 
         if ($request->has('services')) {
             $client->services()->sync($request->input('services'));
@@ -88,5 +77,43 @@ class ClientController extends Controller
 
         return redirect()->route('clientes.index', ['tab' => $tab])
             ->with('success', 'Cliente creado exitosamente');
+    }
+
+    public function update(UpdateClientRequest $request, Client $cliente)
+    {
+        $validated = $request->validated();
+
+        $cliente->update(
+            collect($validated)
+                ->except(['social_networks', 'services'])
+                ->toArray()
+        );
+
+        $this->syncSocialNetworks($cliente, $request->input('social_networks', []));
+
+        if ($request->has('services')) {
+            $cliente->services()->sync($request->input('services'));
+        }
+
+        $tab = $cliente->type === 'prospect' ? 'potenciales' : 'directorio';
+
+        return redirect()->route('clientes.index', ['tab' => $tab])
+            ->with('success', 'Cliente actualizado exitosamente');
+    }
+
+    private function syncSocialNetworks(Client $client, array $networks): void
+    {
+        $client->socialNetworks()->delete();
+
+        foreach (['web', 'facebook', 'twitter', 'linkedin', 'google'] as $platform) {
+            $url = $networks[$platform] ?? null;
+
+            if (! empty($url)) {
+                $client->socialNetworks()->create([
+                    'platform' => $platform,
+                    'url' => $url,
+                ]);
+            }
+        }
     }
 }
