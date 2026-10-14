@@ -3,14 +3,30 @@ import TableToolbar from "./TableToolbar";
 export default function TableCard({
     children,
     searchPlaceholder,
+    searchValue,
+    onSearch,
+    filterFields,
+    estatusOptions,
+    showFilter,
     onAdd,
     onProgress,
+    onExport,
     filters = [],
     className = "",
 }) {
     return (
         <div className={`table-card ${className}`}>
-            <TableToolbar searchPlaceholder={searchPlaceholder} onAdd={onAdd} onProgress={onProgress} />
+            <TableToolbar
+                searchPlaceholder={searchPlaceholder}
+                searchValue={searchValue}
+                onSearch={onSearch}
+                filterFields={filterFields}
+                estatusOptions={estatusOptions}
+                showFilter={showFilter}
+                onAdd={onAdd}
+                onProgress={onProgress}
+                onExport={onExport}
+            />
             <div className={`active-filters-bar ${filters.length ? "has-filters" : ""}`}>
                 <span className="active-filters-label">Filtros activos</span>
                 <div className="active-filters-list">

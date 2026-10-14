@@ -1,5 +1,7 @@
 *.log
 .DS_Store
+opencode.json
+opencode.jsonc
 .env
 .env.backup
 .env.production

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Clients;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pais;
+use App\Models\Client;
 use App\Models\Estado;
-use App\Models\Ciudad;
+use App\Models\Pais;
 use App\Models\SubTipoCliente;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,6 +31,30 @@ class ClientApiController extends Controller
                 ->orderBy('nombre')
                 ->get(['id', 'nombre'])
         );
+    }
+
+    public function show(Client $cliente): JsonResponse
+    {
+        $cliente->load([
+            'personaTipo',
+            'usocfdi',
+            'subtipoCliente',
+            'regimenFiscal',
+            'formaJuridica',
+            'ambito',
+            'tamanio',
+            'sector',
+            'clasificacion',
+            'rama',
+            'pais',
+            'estado',
+            'ciudad',
+            'responsable',
+            'socialNetworks',
+            'services',
+        ]);
+
+        return response()->json($cliente);
     }
 
     public function catalogos(): JsonResponse

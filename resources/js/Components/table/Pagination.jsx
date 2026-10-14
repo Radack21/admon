@@ -32,7 +32,7 @@ export default function Pagination({ currentPage = 1, total = 0, perPage = 10, o
     };
 
     return (
-        <div className="flex items-center justify-between px-[22px] py-2.5 border-t border-black/[0.09] bg-white flex-shrink-0">
+        <div className="flex items-center justify-between px-[22px] py-2.5 border-t border-black/[0.09] bg-white shrink-0">
             <div className="text-xs text-[#70747c]">
                 Mostrando {from}–{to} de {total} registros
             </div>

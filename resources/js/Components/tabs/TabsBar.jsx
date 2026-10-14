@@ -9,7 +9,7 @@ export default function TabsBar({ tabs = ["Ingresos", "Categorías", "Estatus"],
     };
 
     return (
-        <div className="flex items-end h-11 px-4 mx-[22px] mt-3 bg-white/[0.07] backdrop-blur-md border border-orange-200/15 rounded-xl flex-shrink-0">
+        <div className="flex items-end h-11 px-4 mx-[22px] mt-3 bg-white/[0.07] backdrop-blur-md border border-orange-200/15 rounded-xl shrink-0">
             {tabs.map((tab, i) => (
                 <button
                     key={tab}

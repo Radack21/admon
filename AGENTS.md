@@ -66,12 +66,16 @@ resources/
 
 ### Clientes (`/clientes`)
 - **Página**: `Pages/Clientes/Index.jsx` — 3 tabs (Directorio, Potenciales, Mailing)
-- **Tabla**: `Pages/Clientes/ClientesDataTable.jsx` — columnas: Cliente, Folio, RFC, Estatus, Fecha, Contacto + acciones
-- **Controlador**: `Http/Controllers/Clients/ClientController.php`
-- **API**: `Http/Controllers/Clients/ClientApiController.php` (estados, ciudades, subtipos)
+- **Tabla**: `Pages/Clientes/ClientesDataTable.jsx` — columnas: Cliente, Folio, RFC, Estatus, Fecha, Contacto + acciones (Ver / Editar)
+- **Formulario**: `Pages/Clientes/CreateClientModal.jsx` — alta y edición (prop `client`; usa `POST clientes.store` / `PUT clientes.update`)
+- **Detalle**: `Pages/Clientes/ClientDetailModal.jsx` — ficha de solo lectura (fetch a `api.clientes.show`)
+- **Controlador**: `Http/Controllers/Clients/ClientController.php` — `index`, `store`, `update`
+- **API**: `Http/Controllers/Clients/ClientApiController.php` — `catalogos`, `estados`, `ciudades`, `subtipos` y `show` (este último con middleware `auth`)
+- **Requests**: `Http/Requests/Clients/StoreClientRequest.php`, `UpdateClientRequest.php`
 - **Modelos**: `Client`, `ClientContact`, `ClientSocialNetwork`, `ClientCredential`, `ClientMetadata`, `Mailing`
 - **Catálogos**: `PersonaTipo`, `UsoCfdi`, `SubTipoCliente`, `RegimenFiscal`, `FormaJuridica`, `Ambito`, `Tamanio`, `Sector`, `Clasificacion`, `Rama`, `Pais`, `Estado`, `Ciudad`, `Servicio`
 - **Tabla**: `clients` (unifica Directorio + Potenciales del legacy)
+- **Pivote servicios**: `client_service` usa columnas `client_id` / `service_id` (¡ojo, no `servicio_id`!)
 
 ## DB
 

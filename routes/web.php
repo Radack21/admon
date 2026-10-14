@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -39,11 +39,16 @@ Route::prefix('clientes')->middleware(['auth'])->group(function () {
         ->name('clientes.index');
     Route::post('/', [App\Http\Controllers\Clients\ClientController::class, 'store'])
         ->name('clientes.store');
+    Route::put('/{cliente}', [App\Http\Controllers\Clients\ClientController::class, 'update'])
+        ->name('clientes.update');
 });
 
 Route::prefix('api')->group(function () {
     Route::get('/clientes/catalogos', [App\Http\Controllers\Clients\ClientApiController::class, 'catalogos'])
         ->name('api.clientes.catalogos');
+    Route::get('/clientes/{cliente}', [App\Http\Controllers\Clients\ClientApiController::class, 'show'])
+        ->middleware('auth')
+        ->name('api.clientes.show');
     Route::get('/estados/{pais}', [App\Http\Controllers\Clients\ClientApiController::class, 'estados'])
         ->name('api.estados');
     Route::get('/ciudades/{estado}', [App\Http\Controllers\Clients\ClientApiController::class, 'ciudades'])

@@ -11,9 +11,39 @@ export default function Select({
 }) {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
+    const [pos, setPos] = useState(null);
     const wrapRef = useRef(null);
+    const triggerRef = useRef(null);
+    const popRef = useRef(null);
 
     const selected = options.find((o) => String(o.value) === String(value));
+
+    const computePos = () => {
+        const trigger = triggerRef.current;
+        if (!trigger) return;
+        const rect = trigger.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom - 8;
+        const spaceAbove = rect.top - 8;
+        const downward = spaceBelow >= 180 || spaceBelow >= spaceAbove;
+        const maxHeight = Math.max(140, Math.floor(downward ? spaceBelow : spaceAbove));
+        setPos(
+            downward
+                ? { position: "fixed", left: rect.left, width: rect.width, top: rect.bottom + 6, bottom: "auto", maxHeight, overflowY: "auto" }
+                : { position: "fixed", left: rect.left, width: rect.width, top: "auto", bottom: window.innerHeight - rect.top + 6, maxHeight, overflowY: "auto" }
+        );
+    };
+
+    useEffect(() => {
+        if (!open) return;
+        computePos();
+        const onReflow = () => computePos();
+        window.addEventListener("scroll", onReflow, true);
+        window.addEventListener("resize", onReflow);
+        return () => {
+            window.removeEventListener("scroll", onReflow, true);
+            window.removeEventListener("resize", onReflow);
+        };
+    }, [open]);
 
     useEffect(() => {
         const onDocClick = (e) => {
@@ -46,6 +76,7 @@ export default function Select({
             className={`select-base-wrapper ${open ? "active" : ""} ${selected ? "has-value" : ""} ${className}`}
         >
             <button
+                ref={triggerRef}
                 type="button"
                 className="select-trigger-base"
                 onClick={() => setOpen((o) => !o)}
@@ -58,7 +89,7 @@ export default function Select({
                 </svg>
             </button>
             {label && <label className="floating-label-base">{label}</label>}
-            <div className="select-popover-base" role="listbox">
+            <div ref={popRef} className="select-popover-base" role="listbox" style={pos || undefined}>
                 {searchable && (
                     <input
                         type="text"
