@@ -1,5 +1,6 @@
 import IconBotAvatar from "./IconBotAvatar";
 import IconBotFab from "./IconBotFab";
+import IconAsistente from "./IconAsistente";
 import IconClientes from "./IconClientes";
 import IconEgresos from "./IconEgresos";
 import IconIngresos from "./IconIngresos";
@@ -12,6 +13,7 @@ import IconUsuarios from "./IconUsuarios";
 export {
     IconBotAvatar,
     IconBotFab,
+    IconAsistente,
     IconClientes,
     IconEgresos,
     IconIngresos,

@@ -13,6 +13,7 @@ import {
     IconRequerimientos,
     IconResultados,
     IconSprints,
+    IconAsistente,
 } from "@/Components/Icons";
 import Footer from "../Components/ui/Footer";
 import PageTransition from "@/Components/ui/PageTransition";
@@ -67,6 +68,12 @@ export default function Home() {
                         label="Sprints"
                         icon={IconSprints}
                         accentColor="#FFE566"
+                    />
+                    <MenuItem
+                        label="Asistente"
+                        icon={IconAsistente}
+                        accentColor="#F97316"
+                        href={route("asistente.index")}
                     />
                 </div>
             </PageTransition>

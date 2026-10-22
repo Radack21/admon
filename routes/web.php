@@ -43,6 +43,23 @@ Route::prefix('clientes')->middleware(['auth'])->group(function () {
         ->name('clientes.update');
 });
 
+Route::get('/asistente', [App\Http\Controllers\Ai\AssistantController::class, 'index'])
+    ->middleware(['auth', 'permission:asistente-ia'])
+    ->name('asistente.index');
+
+Route::prefix('api/asistente')->middleware(['auth', 'permission:asistente-ia'])->group(function () {
+    Route::post('/chat', [App\Http\Controllers\Ai\AssistantController::class, 'chat'])
+        ->name('api.asistente.chat');
+
+    Route::post('/apply', [App\Http\Controllers\Ai\AssistantController::class, 'apply'])
+        ->middleware('permission:asistente-ia:aplicar')
+        ->name('api.asistente.apply');
+
+    Route::post('/discard', [App\Http\Controllers\Ai\AssistantController::class, 'discard'])
+        ->middleware('permission:asistente-ia:aplicar')
+        ->name('api.asistente.discard');
+});
+
 Route::prefix('api')->group(function () {
     Route::get('/clientes/catalogos', [App\Http\Controllers\Clients\ClientApiController::class, 'catalogos'])
         ->name('api.clientes.catalogos');

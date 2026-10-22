@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         $this->call([
             MigratePermissionsSeeder::class,
+            AiAssistantPermissionsSeeder::class,
             CatalogSeeder::class,
             ClientSeeder::class,
         ]);
